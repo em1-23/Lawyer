@@ -1028,6 +1028,47 @@ html{
     gap: 1rem;
     font-size: .78rem;
   }
+  & .ConsultationMessageEditor{
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    gap: .45rem;
+    margin-top: .5rem;
+  }
+  & .ConsultationMessageActions{
+    display: flex;
+    justify-content: flex-end;
+    gap: .4rem;
+    margin-top: .4rem;
+  }
+  & .ConsultationMessageActions button,
+  & .ConsultationMessageEditor button{
+    width: auto;
+    padding: .3rem .5rem;
+    border: 1px solid currentColor;
+    border-radius: 3px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: .72rem;
+    cursor: pointer;
+  }
+  & .ConsultationMessageEditor textarea{
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 72px;
+    padding: .5rem;
+    border: 1px solid var(--Grey);
+    border-radius: 3px;
+    background: #fff;
+    color: #222;
+    font: inherit;
+    resize: vertical;
+  }
+  & .ConsultationEditedLabel{
+    font-size: .68rem;
+    opacity: .7;
+  }
   & time{
     color: var(--Color-Light);
   }
@@ -1116,6 +1157,19 @@ html{
 .ConsultationAutomaticMessages{
   display: grid;
   gap: .65rem;
+}
+.ConsultationInitialAutomaticStage{
+  & .SecondOne{
+    display: none;
+  }
+}
+.ConsultationStartedAutomaticStage{
+  padding: .75rem 1rem;
+  border-bottom: 1px solid var(--Grey);
+
+  & .FirstOne{
+    display: none;
+  }
 }
 .ConsultationInitialAutomaticStage{
   & .SecondOne{
@@ -1721,10 +1775,5 @@ html{
         color: var(--Second_Color);
       }
     }
-  }
-  &.SecondOne{
-    --BackgroundColorMessage: var(--Color);
-    --MessageColor: var(--Background-Color);
-    --Second_Color: #009dff;
   }
 }

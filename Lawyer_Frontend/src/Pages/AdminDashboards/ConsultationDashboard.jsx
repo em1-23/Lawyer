@@ -12,6 +12,8 @@ function ConsultationDashboard() {
   const [selectedChatId, setSelectedChatId] = useState("")
   const [selectedChat, setSelectedChat] = useState(null)
   const [messageText, setMessageText] = useState("")
+  const [editingMessageId, setEditingMessageId] = useState(null)
+  const [editingMessageText, setEditingMessageText] = useState("")
   const [scheduleAt, setScheduleAt] = useState("")
   const [error, setError] = useState("")
   const [notice, setNotice] = useState("")
@@ -102,6 +104,53 @@ function ConsultationDashboard() {
       setError(requestError.message)
     } finally {
       setIsSending(false)
+    }
+  }
+
+  function beginEditMessage(message) {
+    setEditingMessageId(message.id)
+    setEditingMessageText(message.content)
+  }
+
+  async function saveMessageEdit(messageId) {
+    const content = editingMessageText.trim()
+    if (!content || !selectedChatId) return
+    try {
+      const response = await fetch(`${API_URL}/api/admin/consultation-chats/${encodeURIComponent(selectedChatId)}/messages/${messageId}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "تعذر تعديل الرسالة.")
+      setSelectedChat((current) => current ? {
+        ...current,
+        messages: current.messages.map((message) => message.id === messageId ? data.message : message),
+      } : current)
+      setEditingMessageId(null)
+      setEditingMessageText("")
+    } catch (editError) {
+      setError(editError.message)
+    }
+  }
+
+  async function deleteOwnMessage(messageId) {
+    if (!selectedChatId || !window.confirm("حذف رسالتك؟")) return
+    try {
+      const response = await fetch(`${API_URL}/api/admin/consultation-chats/${encodeURIComponent(selectedChatId)}/messages/${messageId}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "تعذر حذف الرسالة.")
+      setSelectedChat((current) => current ? {
+        ...current,
+        messages: current.messages.filter((message) => message.id !== messageId),
+      } : current)
+      if (editingMessageId === messageId) setEditingMessageId(null)
+    } catch (deleteError) {
+      setError(deleteError.message)
     }
   }
 
@@ -219,9 +268,23 @@ function ConsultationDashboard() {
               </section>
               <div className="AdminConsultationMessages" aria-live="polite">
                 {selectedChat.messages.map((message) => (
-                  <article className={`AdminConsultationMessage ${message.sender_role}`} key={`${message.created_at}-${message.sender_role}-${message.content}`}>
+                  <article className={`AdminConsultationMessage ${message.sender_role}`} key={message.id}>
                     <div><strong>{message.sender_name}</strong><time>{new Date(`${message.created_at}Z`).toLocaleString("ar-EG")}</time></div>
-                    <p>{message.content}</p>
+                    {editingMessageId === message.id ? (
+                      <div className="ConsultationMessageEditor">
+                        <textarea value={editingMessageText} onChange={(event) => setEditingMessageText(event.target.value)} maxLength={4000} autoFocus />
+                        <button type="button" onClick={() => saveMessageEdit(message.id)} disabled={!editingMessageText.trim()}>حفظ التعديل</button>
+                        <button type="button" onClick={() => setEditingMessageId(null)}>إلغاء</button>
+                      </div>
+                    ) : (
+                      <>
+                        <p>{message.content}{message.edited_at && <small className="ConsultationEditedLabel"> (تم التعديل)</small>}</p>
+                        {message.canEdit && selectedChat.chat.availability === "open" && <div className="ConsultationMessageActions">
+                          <button type="button" onClick={() => beginEditMessage(message)}>تعديل</button>
+                          <button type="button" onClick={() => deleteOwnMessage(message.id)}>حذف</button>
+                        </div>}
+                      </>
+                    )}
                   </article>
                 ))}
                   {visitorIsTyping && <div className="ConsultationTyping" aria-label="الزائر يكتب"><i /><i /><i /></div>}

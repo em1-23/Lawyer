@@ -127,6 +127,13 @@ for (const [name, definition] of [
         database.exec(`ALTER TABLE consultation_chats ADD COLUMN ${name} ${definition}`);
     }
 }
+const consultationMessageColumns = new Set(database.pragma("table_info(consultation_chat_messages)").map((column) => column.name));
+for (const [name, definition] of [["sender_id", "TEXT"], ["edited_at", "TEXT"]]) {
+    if (!consultationMessageColumns.has(name)) {
+        database.exec(`ALTER TABLE consultation_chat_messages ADD COLUMN ${name} ${definition}`);
+    }
+}
+database.prepare("UPDATE consultation_chat_messages SET sender_id = 'visitor' WHERE sender_role = 'visitor' AND sender_id IS NULL").run();
 try {
     database.exec("ALTER TABLE conversations ADD COLUMN violation_count INTEGER NOT NULL DEFAULT 0");
 } catch (error) {
@@ -608,8 +615,12 @@ app.get("/api/admin/consultation-chats/:chatId", requireAdmin, requireConsultati
     `)
         .get(req.params.chatId);
     if (!chat) return res.status(404).json({ error: "محادثة الاستشارة غير موجودة." });
-    const messages = database.prepare("SELECT sender_role, sender_name, content, created_at FROM consultation_chat_messages WHERE chat_id = ? ORDER BY id ASC")
-        .all(chat.id);
+    const messages = database.prepare("SELECT id, sender_role, sender_name, sender_id, content, created_at, edited_at FROM consultation_chat_messages WHERE chat_id = ? ORDER BY id ASC")
+        .all(chat.id)
+        .map(({ sender_id: senderId, ...message }) => ({
+            ...message,
+            canEdit: message.sender_role === "admin" && senderId === req.admin.email,
+        }));
     const availability = getConsultationChatState(chat);
     return res.json({
         chat: { ...chat, availability },
@@ -624,12 +635,44 @@ app.post("/api/admin/consultation-chats/:chatId/messages", requireAdmin, require
     const chat = database.prepare("SELECT * FROM consultation_chats WHERE public_id = ?").get(req.params.chatId);
     if (!chat) return res.status(404).json({ error: "محادثة الاستشارة غير موجودة." });
     if (getConsultationChatState(chat) !== "open") return res.status(409).json({ error: "الرد متاح خلال موعد المحادثة فقط." });
-    database.prepare("INSERT INTO consultation_chat_messages (chat_id, sender_role, sender_name, content) VALUES (?, 'admin', ?, ?)")
-        .run(chat.id, req.admin.name || req.admin.email, content);
+    const inserted = database.prepare("INSERT INTO consultation_chat_messages (chat_id, sender_role, sender_name, sender_id, content) VALUES (?, 'admin', ?, ?, ?)")
+        .run(chat.id, req.admin.name || req.admin.email, req.admin.email, content);
     database.prepare("UPDATE consultation_chats SET admin_typing_until = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(chat.id);
-    const message = database.prepare("SELECT sender_role, sender_name, content, created_at FROM consultation_chat_messages WHERE id = last_insert_rowid()")
-        .get();
-    return res.status(201).json({ message });
+    const message = database.prepare("SELECT id, sender_role, sender_name, content, created_at, edited_at FROM consultation_chat_messages WHERE id = ?")
+        .get(inserted.lastInsertRowid);
+    return res.status(201).json({ message: { ...message, canEdit: true } });
+});
+
+app.patch("/api/admin/consultation-chats/:chatId/messages/:messageId", requireAdmin, requireConsultationAdmin, (req, res) => {
+    const messageId = Number(req.params.messageId);
+    const content = typeof req.body?.content === "string" ? req.body.content.trim() : "";
+    if (!Number.isSafeInteger(messageId) || messageId < 1 || !content || content.length > 4000) {
+        return res.status(400).json({ error: "اكتب رسالة صحيحة لا تتجاوز 4000 حرف." });
+    }
+    const chat = database.prepare("SELECT * FROM consultation_chats WHERE public_id = ?").get(req.params.chatId);
+    if (!chat) return res.status(404).json({ error: "محادثة الاستشارة غير موجودة." });
+    if (getConsultationChatState(chat) !== "open") return res.status(409).json({ error: "التعديل متاح خلال موعد المحادثة فقط." });
+    const message = database.prepare("SELECT id FROM consultation_chat_messages WHERE id = ? AND chat_id = ? AND sender_role = 'admin' AND sender_id = ?")
+        .get(messageId, chat.id, req.admin.email);
+    if (!message) return res.status(404).json({ error: "الرسالة غير موجودة أو لا تملك صلاحية تعديلها." });
+    database.prepare("UPDATE consultation_chat_messages SET content = ?, edited_at = CURRENT_TIMESTAMP WHERE id = ?")
+        .run(content, messageId);
+    const updatedMessage = database.prepare("SELECT id, sender_role, sender_name, content, created_at, edited_at FROM consultation_chat_messages WHERE id = ?")
+        .get(messageId);
+    return res.json({ message: { ...updatedMessage, canEdit: true } });
+});
+
+app.delete("/api/admin/consultation-chats/:chatId/messages/:messageId", requireAdmin, requireConsultationAdmin, (req, res) => {
+    const messageId = Number(req.params.messageId);
+    if (!Number.isSafeInteger(messageId) || messageId < 1) return res.status(400).json({ error: "رقم الرسالة غير صحيح." });
+    const chat = database.prepare("SELECT * FROM consultation_chats WHERE public_id = ?").get(req.params.chatId);
+    if (!chat) return res.status(404).json({ error: "محادثة الاستشارة غير موجودة." });
+    if (getConsultationChatState(chat) !== "open") return res.status(409).json({ error: "الحذف متاح خلال موعد المحادثة فقط." });
+    const result = database.prepare("DELETE FROM consultation_chat_messages WHERE id = ? AND chat_id = ? AND sender_role = 'admin' AND sender_id = ?")
+        .run(messageId, chat.id, req.admin.email);
+    if (!result.changes) return res.status(404).json({ error: "الرسالة غير موجودة أو لا تملك صلاحية حذفها." });
+    database.prepare("UPDATE consultation_chats SET updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(chat.id);
+    return res.json({ deleted: true, messageId });
 });
 
 app.patch("/api/admin/consultation-chats/:chatId", requireAdmin, requireConsultationAdmin, (req, res) => {
@@ -773,8 +816,12 @@ app.get("/api/consultation-chats/:chatId/messages", (req, res) => {
     const chat = database.prepare("SELECT * FROM consultation_chats WHERE public_id = ? AND visitor_token_hash = ?")
         .get(req.params.chatId, hashValue(visitorToken));
     if (!chat) return res.status(404).json({ error: "محادثة الاستشارة غير موجودة." });
-    const messages = database.prepare("SELECT sender_role, sender_name, content, created_at FROM consultation_chat_messages WHERE chat_id = ? ORDER BY id ASC")
-        .all(chat.id);
+    const messages = database.prepare("SELECT id, sender_role, sender_name, sender_id, content, created_at, edited_at FROM consultation_chat_messages WHERE chat_id = ? ORDER BY id ASC")
+        .all(chat.id)
+        .map(({ sender_id: senderId, ...message }) => ({
+            ...message,
+            canEdit: message.sender_role === "visitor" && senderId === "visitor",
+        }));
     const availability = getConsultationChatState(chat);
     return res.json({
         chat: {
@@ -799,12 +846,48 @@ app.post("/api/consultation-chats/:chatId/messages", (req, res) => {
     if (getConsultationChatState(chat) !== "open") return res.status(409).json({ error: "الرسائل متاحة خلال الموعد المحدد فقط." });
     const content = typeof req.body?.content === "string" ? req.body.content.trim() : "";
     if (!content || content.length > 4000) return res.status(400).json({ error: "اكتب رسالة لا تتجاوز 4000 حرف." });
-    database.prepare("INSERT INTO consultation_chat_messages (chat_id, sender_role, sender_name, content) VALUES (?, 'visitor', ?, ?)")
+    const inserted = database.prepare("INSERT INTO consultation_chat_messages (chat_id, sender_role, sender_name, sender_id, content) VALUES (?, 'visitor', ?, 'visitor', ?)")
         .run(chat.id, chat.visitor_name, content);
     database.prepare("UPDATE consultation_chats SET visitor_typing_until = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(chat.id);
-    const message = database.prepare("SELECT sender_role, sender_name, content, created_at FROM consultation_chat_messages WHERE id = last_insert_rowid()")
-        .get();
-    return res.status(201).json({ message });
+    const message = database.prepare("SELECT id, sender_role, sender_name, content, created_at, edited_at FROM consultation_chat_messages WHERE id = ?")
+        .get(inserted.lastInsertRowid);
+    return res.status(201).json({ message: { ...message, canEdit: true } });
+});
+
+app.patch("/api/consultation-chats/:chatId/messages/:messageId", (req, res) => {
+    const visitorToken = req.get("x-consultation-token") || "";
+    const messageId = Number(req.params.messageId);
+    const content = typeof req.body?.content === "string" ? req.body.content.trim() : "";
+    if (!Number.isSafeInteger(messageId) || messageId < 1 || !content || content.length > 4000) {
+        return res.status(400).json({ error: "اكتب رسالة صحيحة لا تتجاوز 4000 حرف." });
+    }
+    const chat = database.prepare("SELECT * FROM consultation_chats WHERE public_id = ? AND visitor_token_hash = ?")
+        .get(req.params.chatId, hashValue(visitorToken));
+    if (!chat) return res.status(404).json({ error: "محادثة الاستشارة غير موجودة." });
+    if (getConsultationChatState(chat) !== "open") return res.status(409).json({ error: "التعديل متاح خلال موعد المحادثة فقط." });
+    const message = database.prepare("SELECT id FROM consultation_chat_messages WHERE id = ? AND chat_id = ? AND sender_role = 'visitor' AND sender_id = 'visitor'")
+        .get(messageId, chat.id);
+    if (!message) return res.status(404).json({ error: "الرسالة غير موجودة أو لا تملك صلاحية تعديلها." });
+    database.prepare("UPDATE consultation_chat_messages SET content = ?, edited_at = CURRENT_TIMESTAMP WHERE id = ?")
+        .run(content, messageId);
+    const updatedMessage = database.prepare("SELECT id, sender_role, sender_name, content, created_at, edited_at FROM consultation_chat_messages WHERE id = ?")
+        .get(messageId);
+    return res.json({ message: { ...updatedMessage, canEdit: true } });
+});
+
+app.delete("/api/consultation-chats/:chatId/messages/:messageId", (req, res) => {
+    const visitorToken = req.get("x-consultation-token") || "";
+    const messageId = Number(req.params.messageId);
+    if (!Number.isSafeInteger(messageId) || messageId < 1) return res.status(400).json({ error: "رقم الرسالة غير صحيح." });
+    const chat = database.prepare("SELECT * FROM consultation_chats WHERE public_id = ? AND visitor_token_hash = ?")
+        .get(req.params.chatId, hashValue(visitorToken));
+    if (!chat) return res.status(404).json({ error: "محادثة الاستشارة غير موجودة." });
+    if (getConsultationChatState(chat) !== "open") return res.status(409).json({ error: "الحذف متاح خلال موعد المحادثة فقط." });
+    const result = database.prepare("DELETE FROM consultation_chat_messages WHERE id = ? AND chat_id = ? AND sender_role = 'visitor' AND sender_id = 'visitor'")
+        .run(messageId, chat.id);
+    if (!result.changes) return res.status(404).json({ error: "الرسالة غير موجودة أو لا تملك صلاحية حذفها." });
+    database.prepare("UPDATE consultation_chats SET updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(chat.id);
+    return res.json({ deleted: true, messageId });
 });
 
 app.post("/api/consultation-chats/:chatId/typing", (req, res) => {

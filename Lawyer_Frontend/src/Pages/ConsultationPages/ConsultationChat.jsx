@@ -24,6 +24,8 @@ function ConsultationChat() {
   const [requestDetails, setRequestDetails] = useState("")
   const [preferredAt, setPreferredAt] = useState("")
   const [messageText, setMessageText] = useState("")
+  const [editingMessageId, setEditingMessageId] = useState(null)
+  const [editingMessageText, setEditingMessageText] = useState("")
   const [messages, setMessages] = useState([])
   const [availability, setAvailability] = useState("awaiting_appointment")
   const [scheduledAt, setScheduledAt] = useState(null)
@@ -167,6 +169,46 @@ function ConsultationChat() {
     }
   }
 
+  function beginEditMessage(message) {
+    setEditingMessageId(message.id)
+    setEditingMessageText(message.content)
+  }
+
+  async function saveMessageEdit(messageId) {
+    const content = editingMessageText.trim()
+    if (!content || !savedChat) return
+    try {
+      const response = await fetch(`${API_URL}/api/consultation-chats/${encodeURIComponent(savedChat.chatId)}/messages/${messageId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "x-consultation-token": savedChat.visitorToken },
+        body: JSON.stringify({ content }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "تعذر تعديل الرسالة.")
+      setMessages((current) => current.map((message) => message.id === messageId ? data.message : message))
+      setEditingMessageId(null)
+      setEditingMessageText("")
+    } catch (editError) {
+      setError(editError.message)
+    }
+  }
+
+  async function deleteOwnMessage(messageId) {
+    if (!savedChat || !window.confirm("حذف رسالتك؟")) return
+    try {
+      const response = await fetch(`${API_URL}/api/consultation-chats/${encodeURIComponent(savedChat.chatId)}/messages/${messageId}`, {
+        method: "DELETE",
+        headers: { "x-consultation-token": savedChat.visitorToken },
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "تعذر حذف الرسالة.")
+      setMessages((current) => current.filter((message) => message.id !== messageId))
+      if (editingMessageId === messageId) setEditingMessageId(null)
+    } catch (deleteError) {
+      setError(deleteError.message)
+    }
+  }
+
   function handleMessageChange(value) {
     setMessageText(value)
     if (!savedChat || availability !== "open") return
@@ -202,14 +244,28 @@ function ConsultationChat() {
             {availability === "scheduled" && scheduledAt ? `موعدك ${new Date(scheduledAt).toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })}` : "المحادثة هتفتح بعد ما الإدارة تؤكد الموعد المرسل لبريدك."}
             {availability === "scheduled" && appointmentEndsAt && ` وتنتهي ${new Date(appointmentEndsAt).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}.`}
           </p>}
+          {availability !== "closed" && <div className="ConsultationStartedAutomaticStage"><ConsultationAutomaticMessages /></div>}
           <div className="ConsultationChatMessages" aria-live="polite">
             {messages.filter((message) => message.sender_name !== "المساعد الذكي").map((message) => (
-              <article className={`ConsultationChatMessage ${message.sender_role}`} key={`${message.created_at}-${message.sender_role}-${message.content}`}>
+              <article className={`ConsultationChatMessage ${message.sender_role}`} key={message.id}>
                 <div><strong>{message.sender_role === "visitor" ? "أنت" : message.sender_name}</strong><time>{new Date(`${message.created_at}Z`).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}</time></div>
-                <p>{message.content}</p>
+                {editingMessageId === message.id ? (
+                  <div className="ConsultationMessageEditor">
+                    <textarea value={editingMessageText} onChange={(event) => setEditingMessageText(event.target.value)} maxLength={4000} autoFocus />
+                    <button type="button" onClick={() => saveMessageEdit(message.id)} disabled={!editingMessageText.trim()}>حفظ التعديل</button>
+                    <button type="button" onClick={() => setEditingMessageId(null)}>إلغاء</button>
+                  </div>
+                ) : (
+                  <>
+                    <p>{message.content}{message.edited_at && <small className="ConsultationEditedLabel"> (تم التعديل)</small>}</p>
+                    {message.canEdit && <div className="ConsultationMessageActions">
+                      <button type="button" onClick={() => beginEditMessage(message)}>تعديل</button>
+                      <button type="button" onClick={() => deleteOwnMessage(message.id)}>حذف</button>
+                    </div>}
+                  </>
+                )}
               </article>
             ))}
-            {availability !== "closed" && <div className="ConsultationStartedAutomaticStage"><ConsultationAutomaticMessages /></div>}
             {adminIsTyping && <div className="ConsultationTyping" aria-label="الإدارة تكتب"><i /><i /><i /></div>}
             {!messages.length && <p className="ConsultationChatEmpty">ابدأ بكتابة رسالتك.</p>}
           </div>
