@@ -1,0 +1,9 @@
+**/node_modules/
+**/.env
+**/.env.*
+!**/.env.example
+**/*.sqlite
+**/*.sqlite-*
+Lawyer_Frontend/dist/
+Lawyer_Frontend/dist-ssr/
+**/coverage/

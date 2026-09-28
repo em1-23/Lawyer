@@ -1,0 +1,1730 @@
+@font-face {
+  font-family: "Cairo";
+  src: url(Fonts/Cairo-Regular-3.ttf);
+}
+:root{
+  --Background-Color:#f0eee4;
+  --Grey:#dfdfdd;
+  --Color:#004741;
+  --Color-Light:#025851;
+  --InvisibaleColor:#d4d4dd45;
+}
+html{
+  transition: all .3s ease;
+  background-color: var(--Background-Color);
+  & *{
+    color: var(--Color);
+    list-style: none;
+    transition: all .3s ease;
+    text-decoration: none;
+    font-family: "Cairo";
+    &::selection{
+      background-color: var(--Color);
+      color: var(--Background-Color);
+    }
+  }
+  &:has(
+  .Background-Change-Toggle 
+  #Background-Change-Toggle-Check_Box:checked
+  ){
+    --Background-Color:#004741;
+    --Color:#f0eee4;
+    --Grey:#016b62;
+    --Color-Light:#dddbd2;
+  }
+  &::-webkit-scrollbar{
+    display: none;
+  }
+}
+.Background-Change-Toggle{
+  #Background-Change-Toggle-Check_Box{
+    display: none;
+  }
+  .Background-Change-Toggle-Label{
+    background-color: var(--Color);
+    border-radius: 2rem;
+    display: inline-block;
+    width: 50px;
+    height: 25px;
+    position: relative;
+    &::after{
+      content: "";
+      position: absolute;
+      width: 17.5px;
+      height: 17.5px;
+      translate: -50% -50%;
+      background-color: var(--Background-Color);
+      border-radius: 50%;
+      transition: all .3s ease;
+      top: 50%;
+      right: -6.5%;
+    }
+  }
+  #Background-Change-Toggle-Check_Box:checked ~
+  .Background-Change-Toggle-Label{
+    &::after{
+      right: 40%;
+    }
+  }
+  width: 51px;
+  height: 30px;
+}
+.Header{
+  width: 95%;
+  padding: 1% 2.5%;
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  display: flex;
+  border-bottom: 2px solid var(--Color);
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  z-index: 1000;
+}
+.Buttons{
+  display: flex;
+  gap: 1em;
+  .Button{
+    background-color: var(--Color);
+    color: var(--Background-Color);
+    padding: .25em .75em;
+    border-bottom: 2px solid var(--Color);
+    display: inline-block;
+    font-size: 12.5px;
+    &:hover{
+      background-color: var(--Background-Color);
+      color: var(--Color);
+    }
+    border-radius: 5px 5px 0px 0px;
+  }
+  .Button.Outline{
+    background-color: var(--Background-Color);
+    color: var(--Color);
+    border-bottom: 2px solid var(--Color);
+    &:hover{
+      background-color: var(--Color);
+      color: var(--Background-Color);
+      cursor: pointer;
+    }
+  }
+}
+.Sections{
+  width: 101%;
+  background-color: var(--Background-Color);
+  margin-right: -.5%;
+}
+.First-Section{
+  margin-top: 6.15%;
+  position: relative;
+  height: 80vh;
+  border-bottom: 2px solid var(--Color);
+  & .Background{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+  & .Center-Section{
+    width: 80%;
+    bottom: 20%;
+    font-size: 30px;
+    position: absolute;
+    left: 10%;
+    line-height: 20px;
+    text-align: center;
+    & *{
+      color: #ffffff;
+    }
+    & h3{
+      color: #e3c6a3;
+      position: relative;
+    }
+    & .Description{
+      font-size: 13.5px;
+      line-height: 20px;
+    }
+    & .Buttons{
+      width: 30%;
+      margin: 0% auto;
+      justify-content: space-around;
+      & .Button.Outline{
+        font-size: 10px;
+        border-radius: 5px;
+        padding: 5px 30px;
+        border: none;
+      }
+    }
+  }
+}
+.Secound-Section{
+  margin: 2% 0%;
+  width: 100%;
+  text-align: center;
+  font-size: 13px;
+  background-color: var(--Background-Color);
+}
+.Line-Throw{
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  & .Svg{
+    height: 30px;
+    width: 30px;
+    fill: var(--Color);
+  }
+  &::after , &::before{
+    width: 20%;
+    height: .00000000000005px;
+    position: absolute;
+    translate: -50% -50%;
+    top: 50%;
+    left: 37.5%;
+    content: "";
+    border: 1px dashed var(--Color);
+  }
+  &::before{
+    right: 17.5%;
+  }
+}
+.Footer{
+  width: 90%;
+  position: fixed;
+  bottom: 0%;
+  left: 0%;
+  padding: 1% 5%;
+  background-color: var(--Color);
+  border-bottom: 2px solid var(--Background-Color);
+  border-top: 2px solid var(--Background-Color);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3em;
+  .Icon{
+    display: flex;
+    align-items: center;
+    font-size: 10px;
+    gap: 5px;
+    flex-direction: row-reverse;
+    & *{
+      color: var(--Background-Color);
+    }
+    & img{
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+.Services{
+  width: 95%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2.5em;
+  height: auto;
+  padding: 1% 2.5%;
+}
+.Service-Card{
+  width: 400px;
+  height: 500px;
+  position: relative;
+  border-radius: 5px;
+  border: 1px solid var(--Grey);
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 220px 100px 1fr 50px;
+  .CenterIcon{
+    height: 50px;
+    width: 50px;
+    background-color: var(--Color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    position: absolute;
+    border: 2px solid var(--Background-Color);
+    translate: -50% -50%;
+    left: 50%;
+    top: 40%;
+    & .CenterIcon-Svg{
+      fill: var(--Background-Color);
+    }
+  }
+  & .Image-Of-The-Service{
+    border-radius:5px 5px 0px 0px ;
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    object-position: top;
+    &:hover{
+      filter: blur(2px);
+    }
+  }
+  &:hover{
+    scale: 1.01;
+    & .Image-Of-The-Service{
+      scale:1.02
+    }
+  }
+  & .Description{
+    font-size: 12.5px;
+    width: 90%;
+    text-align: center;
+    margin: 0 auto;
+  }
+  & .Choose{
+    color: var(--Color);
+    &:hover{
+      color: var(--Color-Light);
+    }
+  }
+}
+.Third-Section{
+  margin: 2% auto;
+  text-align: center;
+  margin-bottom: 10%;
+  font-size: 17.5px;
+}
+.Input-Box{
+  padding: 5px 10px;
+  width: 325px;
+  border:none;
+  border-bottom: 2px solid var(--Color);
+  background-color: var(--Background-Color);
+  color: var(--Color);
+  font-size: 12.5px;
+  margin: 1.5% 0%;
+  font-weight: bolder;
+  &:hover , &:focus{
+    translate: 0% -4px;
+  }
+  &.Submit{
+    width: 150px;
+    display: inline-block;
+    margin: 1.5% 1%;
+    border: 2px solid var(--Background-Color);
+    border-radius: 10px;
+    &:hover{
+      border: 2px solid var(--Color);
+      background-color: var(--Color);
+      scale: 1.05;
+      color: var(--Background-Color);
+    }
+    &.Rev{
+      border-color: var(--Color);
+      min-width: 75px;
+      width: auto;
+      max-width: 200px;
+    }
+  }
+  &.Small{
+    width: 122.5px;
+    margin: 1.5% 2%;
+  }
+}
+.TheMassage{
+  width: 500px;
+  height: 35px;
+  font-size: 12.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0% 5px;
+  margin: 1% auto;
+  border-right: 2px solid var(--Color);
+  border-left: 2px solid var(--Color);
+}
+.Secound-Section.Two{
+  margin-bottom: 4%;
+}
+.Service-Card-Two{
+  width: 85%;
+  border-radius: 5px;
+  border: 1px solid var(--InvisibaleColor);
+  &:hover{
+    border: 1px solid grey;
+  }
+  height: 325px;
+  display: flex;
+  gap: 3em;
+  & .Background{
+    height: 100%;
+    width: 38%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 0px 5px 5px 0px;
+  }
+  & .Desc{
+    position: relative;
+    width: 61.5%;
+    text-align: right;
+    z-index: 999;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+    & .Icon{
+      width: 35px;
+      position: absolute;
+      right: -11.5%;
+      border: 2px solid var(--Background-Color);
+      top: 50%;
+      translate: -50% -50%;
+      height: 35px;
+      background-color: var(--Color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      & .Svg{
+        fill: var(--Background-Color);
+      }
+    }
+    .Description{
+      width: 50%;
+    }
+  }
+}
+.Live-Chat{
+  z-index: 1001;
+  position: fixed;
+  display: grid;
+  bottom: 12%;
+  right: -25%;
+  grid-template-columns: 1fr;
+  grid-template-rows: calc(var(--Width) + 50px) 50px;
+  & .Chat{
+    position: relative;
+    bottom: 7.5px;
+    transform: translateX(250px);
+    opacity: 0;
+    visibility: hidden;
+    --Width:275px;
+    height: calc(var(--Width)*1.5);
+    width: var(--Width);
+    background-color: var(--Color-Light);
+    border-radius: 10px;
+    border: 1px solid var(--Color-Light);
+    .HeaderC.Header-Chat{
+      width: 90%;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0% 5%;
+      border-radius: 9px 9px 0px 0px;
+      background-color: var(--Background-Color);
+      font-size: 8px;
+      & h4{
+        font-size: calc(8px * 2);
+      }
+    }
+    & .TheChat{
+      width: 100%;
+      height: calc(100% - 105px);
+      padding-top: 5px;
+      overflow-y: auto;
+      & .ChatMessege{
+        animation: ChatMessageAppear .25s ease both;
+        font-size: 12.5px;
+        white-space: pre-line;
+        color: var(--Color);
+        width: auto;
+        max-width: 80%;
+        min-width: 50px;
+        height: auto;
+        padding: 5px 7.5px;
+        display: block;
+        background-color: var(--Background-Color);
+        border-radius: 5px;
+        border: 1px solid var(--Background-Color);
+        margin: 5px 5px;
+        text-align: right;
+        overflow-wrap: anywhere;
+      }
+      & .YourChat{
+        margin-right: auto;
+        background-color: var(--Color);
+        color: var(--Background-Color) !important;
+        border-color: var(--Color);
+      }
+      & .AssistantChat{
+        margin-left: auto;
+      }
+      & .loading{
+        opacity: .7;
+      }
+      & .ChatError{
+        color: #b33a3a;
+        font-size: 10px;
+        padding: 5px 10px;
+        text-align: center;
+      }
+    }
+    & .ChatForm{
+      height: 45px;
+      display: flex;
+      gap: 5px;
+      padding: 5px;
+      box-sizing: border-box;
+      background-color: var(--Background-Color);
+      border-radius: 0 0 9px 9px;
+      margin-top: 1.8%;
+      & input,
+      & textarea{
+        min-width: 0;
+        flex: 1;
+        min-height: 30px;
+        border: 1px solid var(--Color);
+        border-radius: 4px;
+        padding: 3px 6px;
+        background-color: transparent;
+        color: var(--Color);
+        font-size: 10px;
+        text-align: right;
+        resize: vertical;
+      }
+      & button{
+        border: 0;
+        border-radius: 4px;
+        padding: 0 8px;
+        background-color: var(--Color);
+        color: var(--Background-Color);
+        font-size: 10px;
+        cursor: pointer;
+        &:disabled{
+          opacity: .5;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+  & #Icon-CheckBox{display: none;}
+  &:has(#Icon-CheckBox:checked){
+    right: 2%;
+  }
+  &:has(#Icon-CheckBox:checked) .Chat{
+    opacity: 1;
+    transform: translateX(0px);
+    visibility: visible;
+  }
+  &:has(#Icon-CheckBox:checked) .Icon-Label{
+    transform: translateX(-150px);
+    & .Chat-Icon{
+      rotate: 200deg;
+    }
+  }
+  & .Icon{
+    width:45px;
+  } 
+  & .Icon-Label{
+    transition: all .5s ease;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 1px solid var(--Background-Color);
+    background-color: var(--Color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateX(-400px);
+    & .Chat-Icon{
+      transition: all .5s ease;
+      fill: var(--Background-Color);
+      width: 22.5px;
+    }
+  }
+}
+@keyframes ChatMessageAppear{
+  from{
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to{
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.Lawyer-Card{
+  display: flex;
+  align-items: center;
+  justify-content: right;
+  gap: 2em;
+  margin: 5% 7.5%;
+  padding: 1% 2.5%;
+  border: 1px solid var(--Grey);
+  width: 80%;
+  border-radius: 10px;
+  &:hover{
+    border-color: var(--Color);
+  }
+  & .ProfilePhoto{
+    width: 100px;
+    height: 100px;
+    border-radius: 3.5rem 0.5rem;
+    &:hover{
+      border-radius: 2.5rem 0.5rem ;
+    }
+  }
+  & .About{
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1.3fr 5fr .5fr ;
+    grid-template-rows: 1fr;
+    gap: 0em;
+  }
+  & .Social{
+    display: flex;
+    align-items: center;
+    & .Icon{
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      & .IconLike{
+        width: 25px;
+        height: 25px;
+      }
+    }
+  }
+}
+& .Profile{
+  width: 195px;
+  margin: 2% 10px;
+  height: auto;
+  padding: 5px 12.5px;
+  display: flex;
+  border: 1px solid var(--Grey);
+  font-size: 12.5px;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--Background-Color);
+  border-radius: 10px;
+  & img{
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+}
+.ChatTextarea{
+  width: 190px;
+  max-height: 30px;
+  min-height: 30px;
+  overflow-y: auto;
+}
+.ChatIdentity{
+  width: 80%;
+  margin: auto;
+  height: 80%;
+  text-align: center;
+  *{
+    color: var(--Background-Color);
+  }
+  .Box{
+    width: calc(100% - 5px);
+    background-color: var(--Color);
+    border-radius: 2rem;
+    color: var(--Background-Color);
+    border: 2px solid var(--Background-Color);
+    &.Submit{
+      width: calc(30%);
+      font-size: 10px;
+      margin: 5px calc((50% - 20px) / 2);
+      &:hover{
+        background-color: var(--Background-Color);
+        color: var(--Color);
+      }
+    }
+  }
+}
+.Box{
+  width: 500px;
+  display: inline-block;
+  background-color: var(--Color);
+  border-radius: 2rem;
+  color: var(--Background-Color);
+  margin: 2% 0px;
+  padding: 5px 5px;
+  border: 2px solid var(--Background-Color);
+  &.Submit{
+    width: calc(200px / 1.75);
+    font-size: 10px;
+    color: var(--Background-Color);
+    padding: 5px 0px;
+    &:hover{
+      background-color: var(--Background-Color);
+      color: var(--Color);
+    }
+  }
+}
+
+.AdminConversationDetails{
+  text-align: center;
+  margin: 1% 5%;
+  width: calc(100% - (30px + 10%));
+  height: 100px;
+  background-color: var(--Color);
+  color: var(--Background-Color);
+  border: 2px solid var(--Grey);
+}
+
+.AdminDashboard{
+  box-sizing: border-box;
+  width: 100%;
+  min-height: calc(100vh - 90px);
+  height: auto;
+  margin: 0;
+  padding: 7rem clamp(1rem, 5vw, 5rem) 4rem;
+  text-align: right;
+}
+.AdminDashboardHeader{
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--Color);
+}
+.AdminDashboardHeader h1{
+  margin: 0;
+  color: var(--Color);
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+}
+.AdminGate{
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  background-color: var(--Background-Color);
+  color: var(--Color);
+}
+.AdminLogin{
+  display: grid;
+  gap: .75rem;
+  width: min(100%, 420px);
+  padding: clamp(1.25rem, 5vw, 2.5rem);
+  border: 1px solid var(--Grey);
+  border-top: 4px solid var(--Color);
+  background-color: var(--Background-Color);
+}
+.AdminLogin h1{
+  margin: 0 0 .75rem;
+  color: var(--Color);
+  font-size: 1.8rem;
+}
+.AdminLogin label{
+  margin-top: .5rem;
+  color: var(--Color);
+  font-size: .9rem;
+}
+.AdminLogin input{
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 46px;
+  padding: .65rem .8rem;
+  border: 1px solid var(--Grey);
+  border-radius: 4px;
+  background: #fff;
+  color: #242424;
+  font: inherit;
+}
+.AdminLogin input:focus-visible{
+  outline: 2px solid var(--Color-Light);
+  outline-offset: 2px;
+}
+.AdminEyebrow{
+  margin: 0;
+  color: var(--Color-Light);
+  font-size: .85rem;
+}
+.AdminSessionBar{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 7rem clamp(1rem, 5vw, 5rem) 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--Grey);
+  color: var(--Color);
+}
+.AdminSessionBar > div:first-child,
+.AdminPresenceHeading{
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  flex-wrap: wrap;
+}
+.AdminSessionBar small,
+.AdminPresenceItem small{
+  color: var(--Color-Light);
+}
+.AdminSessionActions{
+  display: flex;
+  gap: .5rem;
+}
+.AdminSessionActions button{
+  padding: .55rem .8rem;
+  border: 1px solid var(--Grey);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--Color);
+  font: inherit;
+  cursor: pointer;
+}
+.AdminSessionActions button:disabled{
+  cursor: wait;
+  opacity: .6;
+}
+.AdminPresence{
+  margin: 0 clamp(1rem, 5vw, 5rem) 1.5rem;
+  color: var(--Color);
+}
+.AdminPresence h2{
+  margin: 0 0 .75rem;
+  font-size: 1.15rem;
+}
+.AdminPresenceList{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+  gap: .75rem;
+}
+.AdminPresenceItem{
+  min-width: 0;
+  padding: .85rem 1rem;
+  border: 1px solid var(--Grey);
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+.AdminPresenceHeading{
+  justify-content: space-between;
+  gap: .5rem;
+}
+.AdminPresenceHeading span{
+  font-size: .8rem;
+}
+.AdminPresenceHeading .is-online{ color: #27734a; }
+.AdminPresenceHeading .is-offline{ color: #777; }
+.AdminPresenceItem p{
+  margin: .55rem 0 0;
+  color: var(--Color-Light);
+  font-size: .8rem;
+  line-height: 1.6;
+}
+.AdminRotationNotice{
+  margin: 0 clamp(1rem, 5vw, 5rem) 1rem;
+  color: #27734a;
+}
+.AdminConsultationPage{
+  box-sizing: border-box;
+  min-height: 65vh;
+  padding: 1rem clamp(1rem, 5vw, 5rem) 3rem;
+  color: var(--Color);
+}
+.AdminConsultationHeader,
+.AdminConsultationThreadHeader,
+.AdminConsultationItemTop{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.AdminConsultationHeader{
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--Grey);
+}
+.AdminConsultationHeader p{
+  margin: 0 0 .25rem;
+  color: var(--Color-Light);
+  font-size: .85rem;
+}
+.AdminConsultationHeader h1{
+  margin: 0;
+  font-size: 1.6rem;
+}
+.AdminConsultationHeader > span{
+  color: var(--Color-Light);
+  font-size: .9rem;
+}
+.AdminConsultationInbox{
+  display: grid;
+  grid-template-columns: minmax(250px, .85fr) minmax(0, 1.6fr);
+  min-height: 520px;
+  margin-top: 1rem;
+  border: 1px solid var(--Grey);
+}
+.AdminConsultationList{
+  max-height: 68vh;
+  overflow-y: auto;
+  border-left: 1px solid var(--Grey);
+}
+.AdminConsultationItem{
+  display: grid;
+  width: 100%;
+  gap: .45rem;
+  padding: .9rem 1rem;
+  border: 0;
+  border-bottom: 1px solid var(--Grey);
+  background: transparent;
+  color: var(--Color);
+  text-align: right;
+  cursor: pointer;
+}
+.AdminConsultationItem:hover,
+.AdminConsultationItem.selected{
+  background: var(--InvisibaleColor);
+}
+.AdminConsultationItemTop small{
+  color: var(--Color-Light);
+}
+.AdminConsultationItem code,
+.AdminConsultationThreadHeader code,
+.ConsultationChatMeta code{
+  font-size: .72rem;
+  overflow-wrap: anywhere;
+}
+.AdminConsultationItem > span:nth-of-type(2){
+  overflow: hidden;
+  color: var(--Color-Light);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.AdminConsultationItem time{
+  color: var(--Color-Light);
+  font-size: .72rem;
+}
+.AdminConsultationThread{
+  display: grid;
+  grid-template-rows: auto minmax(260px, 1fr) auto;
+  min-width: 0;
+  min-height: 520px;
+}
+.AdminConsultationThreadHeader{
+  padding: .9rem 1rem;
+  border-bottom: 1px solid var(--Grey);
+}
+.AdminConsultationThreadHeader h2{
+  margin: 0 0 .3rem;
+  font-size: 1.1rem;
+}
+.AdminConsultationThreadHeader > div:first-child{
+  display: grid;
+  gap: .2rem;
+  min-width: 0;
+}
+.AdminConsultationThreadHeader a{
+  color: var(--Color-Light);
+  font-size: .82rem;
+  overflow-wrap: anywhere;
+}
+.AdminConsultationActions{
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.AdminConsultationThreadHeader button,
+.AdminConsultationComposer button,
+.ConsultationChatStart button,
+.ConsultationChatComposer button,
+.ConsultationNewChat{
+  padding: .65rem 1rem;
+  border: 1px solid var(--Color);
+  border-radius: 4px;
+  background: var(--Color);
+  color: var(--Background-Color);
+  font: inherit;
+  cursor: pointer;
+}
+.AdminConsultationActions button.danger{
+  border-color: #b94a48;
+  background: transparent;
+  color: #b94a48;
+}
+.AdminConsultationRequest{
+  padding: .75rem 1rem;
+  border-bottom: 1px solid var(--Grey);
+  background: var(--InvisibaleColor);
+  font-size: .85rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.AdminConsultationRequest p{
+  margin: .2rem 0;
+}
+.AdminScheduleForm{
+  display: flex;
+  align-items: end;
+  gap: .6rem;
+  flex-wrap: wrap;
+  margin-top: .75rem;
+}
+.AdminScheduleForm label{
+  flex: 1 1 100%;
+  color: var(--Color-Light);
+  font-size: .8rem;
+}
+.AdminScheduleForm input{
+  min-width: 190px;
+  padding: .55rem;
+  border: 1px solid var(--Grey);
+  border-radius: 4px;
+  background: var(--Background-Color);
+  color: var(--Color);
+  font: inherit;
+}
+.AdminScheduleForm button{
+  padding: .6rem .8rem;
+  border: 1px solid var(--Color);
+  border-radius: 4px;
+  background: var(--Color);
+  color: var(--Background-Color);
+  font: inherit;
+  cursor: pointer;
+}
+.AdminScheduleForm button:disabled{ opacity: .55; cursor: wait; }
+.AdminConsultationMessages,
+.ConsultationChatMessages{
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+  min-height: 0;
+  padding: 1rem;
+  overflow-y: auto;
+}
+.AdminConsultationMessage,
+.ConsultationChatMessage{
+  width: fit-content;
+  max-width: min(82%, 620px);
+  padding: .65rem .8rem;
+  border: 1px solid var(--Grey);
+  border-radius: 4px;
+  background: var(--Background-Color);
+  color: var(--Color);
+  overflow-wrap: anywhere;
+  animation: consultationMessageIn .24s ease-out both;
+
+  &.admin{
+    align-self: flex-start;
+    border-right: 3px solid var(--Color-Light);
+  }
+  &.visitor{
+    align-self: flex-end;
+    border-right: 3px solid var(--Color);
+    background-color: var(--Color);
+
+    *{
+      color: var(--Background-Color);
+    }
+  }
+  & > div{
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: .78rem;
+  }
+  & time{
+    color: var(--Color-Light);
+  }
+  & p{
+    margin: .45rem 0 0;
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+}
+.AdminConsultationComposer,
+.ConsultationChatComposer{
+  display: flex;
+  gap: .65rem;
+  padding: .8rem;
+  border-top: 1px solid var(--Grey);
+}
+.AdminConsultationComposer textarea,
+.ConsultationChatComposer textarea,
+.ConsultationChatStart input{
+  box-sizing: border-box;
+  min-width: 0;
+  flex: 1;
+  padding: .7rem .8rem;
+  border: 1px solid var(--Grey);
+  border-radius: 4px;
+  background: var(--Background-Color);
+  color: var(--Color);
+  font: inherit;
+  resize: vertical;
+}
+.AdminConsultationEmpty{
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  padding: 1rem;
+  color: var(--Color-Light);
+  text-align: center;
+}
+.ConsultationChat{
+  box-sizing: border-box;
+  width: min(100% - 2rem, 900px);
+  margin: 2rem auto 4rem;
+  border: 1px solid var(--Grey);
+  border-top: 4px solid var(--Color);
+  color: var(--Color);
+}
+.ConsultationChatHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--Grey);
+}
+.ConsultationChatHeader > div > span{
+  color: var(--Color-Light);
+  font-size: .8rem;
+}
+.ConsultationChatHeader h2{
+  margin: .2rem 0 0;
+  font-size: 1.25rem;
+}
+.ConsultationChatStatus{
+  padding: .3rem .55rem;
+  border: 1px solid var(--Grey);
+  border-radius: 3px;
+  font-size: .78rem;
+}
+.ConsultationChatStatus.open{ color: #27734a; }
+.ConsultationChatStatus.closed{ color: #777; }
+.ConsultationChatMeta{
+  padding: .6rem 1rem 0;
+  color: var(--Color-Light);
+  font-size: .8rem;
+}
+.ConsultationChatMessages{
+  min-height: 250px;
+  max-height: 55vh;
+}
+.ConsultationChatMessage{
+  &.visitor time{
+    color: inherit;
+    opacity: .75;
+  }
+}
+.ConsultationAutomaticMessages{
+  display: grid;
+  gap: .65rem;
+}
+.ConsultationInitialAutomaticStage{
+  & .SecondOne{
+    display: none;
+  }
+}
+.ConsultationStartedAutomaticStage{
+  & .FirstOne{
+    display: none;
+  }
+}
+.ConsultationAutomaticMessage{
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  box-sizing: border-box;
+  width: 100%;
+  padding: .8rem;
+  border-right: 4px solid var(--automatic-message-accent);
+  border-radius: 4px;
+  background: var(--automatic-message-background);
+  color: #252525;
+  animation: consultationMessageIn .24s ease-out both;
+
+  & img{
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+  }
+  & .ConsultationAutomaticMessageContent{
+    min-width: 0;
+  }
+  & strong{
+    display: block;
+    margin-bottom: .3rem;
+    color: var(--automatic-message-accent);
+    font-size: .86rem;
+  }
+  & p{
+    margin: 0;
+    color: #252525;
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+}
+.ConsultationAutomaticMessage-2{
+  animation-delay: .12s;
+}
+.ConsultationChatNotice{
+  margin: .7rem 1rem;
+  color: var(--Color-Light);
+  font-size: .85rem;
+  line-height: 1.6;
+}
+.ConsultationTyping{
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  min-width: 42px;
+  padding: .65rem .75rem;
+  border: 1px solid var(--Grey);
+  border-radius: 4px;
+  background: var(--Background-Color);
+
+  & i{
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--Color-Light);
+    animation: consultationTypingDot .9s ease-in-out infinite;
+  }
+  & i:nth-child(2){
+    animation-delay: .15s;
+  }
+  & i:nth-child(3){
+    animation-delay: .3s;
+  }
+}
+@keyframes consultationMessageIn{
+  from{ opacity: 0; transform: translateY(8px); }
+  to{ opacity: 1; transform: translateY(0); }
+}
+@keyframes consultationTypingDot{
+  0%, 60%, 100%{ opacity: .35; transform: translateY(0); }
+  30%{ opacity: 1; transform: translateY(-4px); }
+}
+.ConsultationChatEmpty,
+.ConsultationChatStart p{
+  color: var(--Color-Light);
+}
+.ConsultationChatStart{
+  display: grid;
+  gap: .75rem;
+  max-width: 560px;
+  padding: 1.25rem;
+}
+.ConsultationChatStart p{ margin: 0 0 .25rem; }
+.ConsultationChatStart label{ font-size: .9rem; }
+.ConsultationChatComposer textarea{ resize: none; }
+.ConsultationChatStart textarea{
+  box-sizing: border-box;
+  width: 100%;
+  padding: .7rem .8rem;
+  border: 1px solid var(--Grey);
+  border-radius: 4px;
+  background: var(--Background-Color);
+  color: var(--Color);
+  font: inherit;
+  resize: vertical;
+}
+.AdminConsultationComposer button:disabled,
+.ConsultationChatComposer button:disabled,
+.ConsultationChatStart button:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+}
+.ConsultationNewChat{ margin: .5rem 1rem 1rem; }
+.AdminAccessForm{
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin: 0;
+}
+.AdminDashboard .AdminTokenInput{
+  box-sizing: border-box;
+  width: min(360px, 38vw);
+  margin: 0;
+  padding: .75rem 1rem;
+  border: 1px solid var(--Color);
+  border-radius: 6px;
+  background-color: var(--Background-Color);
+  color: var(--Color);
+  font-size: .95rem;
+  outline: none;
+}
+.AdminDashboard .AdminTokenInput:focus{
+  box-shadow: 0 0 0 3px var(--InvisibaleColor);
+}
+.AdminDashboard .AdminLoadButton{
+  width: auto;
+  margin: 0;
+  padding: .75rem 1.2rem;
+  border: 1px solid var(--Color);
+  border-radius: 6px;
+  background-color: var(--Color);
+  color: var(--Background-Color);
+  font-size: .9rem;
+  cursor: pointer;
+}
+.AdminDashboard .AdminLoadButton:hover:not(:disabled){
+  background-color: var(--Color-Light);
+}
+.AdminDashboard .AdminLoadButton:disabled{
+  cursor: wait;
+  opacity: .65;
+}
+.AdminDeleteAllButton{
+  padding: .75rem 1rem;
+  border: 1px solid #b94a48;
+  border-radius: 6px;
+  background-color: transparent;
+  color: #b94a48;
+  font-family: inherit;
+  font-size: .85rem;
+  cursor: pointer;
+}
+.AdminDeleteAllButton:hover:not(:disabled){
+  background-color: #b94a48;
+  color: #fff;
+}
+.AdminDeleteAllButton:disabled{
+  cursor: not-allowed;
+  opacity: .45;
+}
+.AdminError{
+  margin: 1.25rem 0;
+  padding: .8rem 1rem;
+  border-right: 4px solid #b94a48;
+  background-color: #f4d9d7;
+  color: #762d2b;
+  text-align: right;
+}
+.AdminConversationList{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.AdminConversationItem{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .35rem;
+  min-height: 155px;
+  padding: 1.1rem;
+  border: 1px solid var(--Grey);
+  border-right: 4px solid var(--Color);
+  border-radius: 6px;
+  background-color: var(--Background-Color);
+  color: var(--Color);
+  text-align: right;
+  cursor: pointer;
+}
+.AdminConversationItem:hover,
+.AdminConversationItem:focus-visible{
+  border-color: var(--Color);
+  background-color: var(--InvisibaleColor);
+  outline: none;
+  transform: translateY(-2px);
+}
+.AdminConversationItem strong{
+  width: 100%;
+  margin-bottom: .35rem;
+  font-size: 1.05rem;
+}
+.AdminConversationItem span{
+  color: var(--Color-Light);
+  font-size: .85rem;
+  overflow-wrap: anywhere;
+}
+.AdminConversationDetails{
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  margin: 2rem 0 0;
+  padding: 1.5rem;
+  border: 1px solid var(--Grey);
+  border-top: 4px solid var(--Color);
+  border-radius: 6px;
+  background-color: var(--Color);
+  color: var(--Background-Color);
+  text-align: right;
+}
+.AdminConversationDetails h2{
+  margin: 0 0 .35rem;
+  color: var(--Background-Color);
+}
+.AdminConversationHeading{
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.AdminConversationDetails > p{
+  margin: .2rem 0;
+  color: var(--Color-Light);
+  font-size: .9rem;
+}
+.AdminDeleteButton{
+  flex: 0 0 auto;
+  padding: .65rem .9rem;
+  border: 1px solid #e7a09d;
+  border-radius: 6px;
+  background-color: transparent;
+  color: #f3c3c0;
+  font-family: inherit;
+  font-size: .82rem;
+  cursor: pointer;
+}
+.AdminDeleteButton:hover:not(:disabled){
+  background-color: #b94a48;
+  border-color: #b94a48;
+  color: #fff;
+}
+.AdminDeleteButton:disabled{
+  cursor: wait;
+  opacity: .65;
+}
+.AdminMessages{
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  margin-top: 1.5rem;
+}
+.AdminMessage{
+  max-width: 78%;
+  padding: .8rem 1rem;
+  border-radius: 6px;
+  background-color: var(--Background-Color);
+  color: var(--Color);
+}
+.AdminMessage strong,
+.AdminMessage p,
+.AdminMessage time{
+  display: block;
+}
+.AdminMessage strong{
+  margin-bottom: .25rem;
+  font-size: .8rem;
+}
+.AdminMessage p{
+  margin: 0;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.AdminMessage time{
+  margin-top: .5rem;
+  color: var(--Color-Light);
+  font-size: .72rem;
+}
+.AdminMessage-user{
+  align-self: flex-start;
+  border-right: 3px solid var(--Color-Light);
+}
+.AdminMessage-assistant{
+  align-self: flex-end;
+  border-right: 3px solid var(--Color);
+}
+
+@media (max-width: 700px){
+  .AdminDashboard{
+    padding: 5.5rem 1rem 2.5rem;
+  }
+  .AdminDashboardHeader,
+  .AdminAccessForm{
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .AdminDashboardHeader{
+    gap: 1rem;
+  }
+  .AdminSessionBar{
+    align-items: stretch;
+    flex-direction: column;
+    margin: 5.5rem 1rem 1rem;
+  }
+  .AdminPresence{
+    margin-right: 1rem;
+    margin-left: 1rem;
+  }
+  .AdminSessionActions button{
+    flex: 1;
+  }
+  .AdminSessionActions{
+    flex-wrap: wrap;
+  }
+  .AdminConsultationPage{
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+  .AdminConsultationInbox{
+    grid-template-columns: 1fr;
+  }
+  .AdminConsultationList{
+    max-height: 32vh;
+    border-left: 0;
+    border-bottom: 1px solid var(--Grey);
+  }
+  .AdminConsultationThread{
+    min-height: 430px;
+  }
+  .AdminConsultationComposer,
+  .ConsultationChatComposer{
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .AdminConsultationComposer button,
+  .ConsultationChatComposer button{
+    width: 100%;
+  }
+  .AdminConsultationThreadHeader{
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .AdminConsultationActions button,
+  .AdminScheduleForm button,
+  .AdminScheduleForm input{
+    width: 100%;
+  }
+  .AdminDashboard .AdminTokenInput,
+  .AdminDashboard .AdminLoadButton,
+  .AdminDeleteAllButton{
+    width: 100%;
+  }
+  .AdminConversationHeading{
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .AdminDeleteButton{
+    width: 100%;
+  }
+  .AdminMessage{
+    max-width: 92%;
+  }
+}
+.Service-Details{
+  .Background{
+    filter:blur(1px) brightness(.5);
+  }
+}
+.Description.List{
+  display: flex;
+  padding: 0;
+  gap: 1em;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Consultation Section */
+
+.Sections.First-Section.Consultation{
+  position: relative;
+  & .Background{
+    position: absolute;
+    right: 0%;
+    border: 2px solid #e7a09d;
+    top: 50%;
+    translate: -50% -50%;
+    width: 335px;
+    height: 335px;
+    background-color: var(--Color);
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    border-radius: 17.5rem .5rem;
+    animation: BorderRadius 7.5s ease infinite both;
+    & img{
+      margin-right: .5rem;
+      margin-top: -7rem;
+      width: 350px;
+      height: auto;
+    }
+  }
+  & .Center-Section{
+    position: absolute;
+    width: calc(100% - 350px);
+    text-align: right;
+    left: 350px;
+    translate: -50% -50%;
+    top: 45%;
+    & .Description{
+      color: var(--Color);
+      & .Link{
+        color: var(--Color);
+        font-weight: bolder;
+      }
+    }
+  }
+}
+@keyframes FadeIn {
+  from{
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to{
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+@keyframes BorderRadius {
+  0% ,100%{
+    border-radius: 17.5rem .5rem;
+  }
+  50%{
+    border-radius: .5rem 17.5rem;
+  }
+}
+.Consultation_Card{
+  --C_Width: 150px;
+  width: calc(var(--C_Width) * 1.5);
+  height: calc(var(--C_Width) * 1.05);
+  border: 2px solid var(--Color);
+  border-radius: 5px 0px 0px 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: .35rem;
+  padding: 10px 7.5px;
+  background-color: var(--Color);
+  & *{
+    color: var(--Background-Color);
+  }
+  &:hover{
+    background-color: var(--Background-Color);
+    & *{
+      color: var(--Color);
+    }
+  }
+  font-size: calc(var(--C_Width) / 15);
+  & span{
+    display: inline-block;
+    margin: 0 5px;
+  }
+  & .Consultation-Header{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    & .Id-Of-Consultation{
+      font-size: 7.5px;
+    }
+  }
+}
+
+.Consultation_Details{
+  background-color: var(--Color);
+  padding: 0% 2%;
+  border-radius: 5px 1rem;
+  width: 100%;
+  height: auto;
+  min-height: 200px;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 1fr;
+  gap: .5em;
+  padding-bottom: 15px;
+  & *{
+    color: var(--Background-Color);
+  }
+  .Consultation_Header {
+    display:  flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .Consultation_Body{
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+    width: 100%;
+  }
+  .Message{
+    width: auto;
+    min-width: 150px;
+    max-width: 300px;
+    height: auto;
+    min-height: 75px;
+    background-color: var(--Background-Color);
+    border-radius: 5px;
+    display: grid;
+    font-size: 13px;
+    padding: 5px 10px;
+    margin: 5px 5px;
+    display: inline-block;
+    border: 1px solid var(--Color);
+    & *{
+      color: var(--Color);
+    }
+    & .Message_Header{
+      display: flex;
+      flex-direction: row-reverse;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--Color);
+      height: 25px;
+    }
+    & .Message_Body{
+      margin-top: 5px;
+      font-size: 12px;
+    }
+  }
+}
+.AutoMaticMessage{
+  --BackgroundColorMessage: var(--Background-Color);
+  --MessageColor: var(--Color);
+  --Second_Color: #009dff;
+  width:auto;
+  min-width: 50px;
+  max-width: 70%;
+  height: auto;
+  min-height: 50px;
+  max-height: 250px;
+  background-color: var(--BackgroundColorMessage);
+  border-radius: 5px;
+  border: 1px solid var(--MessageColor);
+  font-size: 12px;
+  padding: 5px 5px;
+  padding-top: 0px;
+  border-right: 5px solid var(--Color-Light);
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  gap: 1em;
+  & .MessageHeader{
+    border-bottom: 1px solid var(--MessageColor);
+    margin: 0% -5px;
+    margin-right: -6px;
+    padding: 0% 5px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: right;
+    border-radius: 4px 0px 0px 0px;
+    background-color: var(--Color-Light);
+    *{
+      color: var(--BackgroundColorMessage);
+    }
+  }
+  & .MessageBody{
+    & span{
+      display: inline-block;
+      margin: 0% 0%;
+    }
+    & span.Special{
+      color: #b33a3a;
+    }
+    & ul.MessageList{
+      margin: 0px;
+      border-right: 1px solid var(--Color-Light);
+      margin-right: 10px;
+      padding: 0 7.5px;
+      & li{
+        color: var(--Second_Color);
+      }
+    }
+  }
+  &.SecondOne{
+    --BackgroundColorMessage: var(--Color);
+    --MessageColor: var(--Background-Color);
+    --Second_Color: #009dff;
+  }
+}
