@@ -163,7 +163,7 @@ function AdminDashboard() {
         <label htmlFor="admin-email">البريد الإلكتروني</label>
         <input id="admin-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required />
         <label htmlFor="admin-code">كود الدخول المرسل إلى بريدك</label>
-        <input id="admin-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{8}" maxLength={8} value={code} onChange={(event) => setCode(event.target.value)} required />
+        <input id="admin-code" type="text" inputMode="text" autoCapitalize="off" autoCorrect="off" spellCheck={false} autoComplete="one-time-code" pattern="[A-Za-z0-9$#_@-]{3,128}" maxLength={128} value={code} onChange={(event) => setCode(event.target.value)} required />
         {error && <p className="AdminError" role="alert">{error}</p>}
         <button className="AdminLoadButton" type="submit" disabled={isSubmitting}>{isSubmitting ? "جارٍ التحقق..." : "دخول آمن"}</button>
       </form>

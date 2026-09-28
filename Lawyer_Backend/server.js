@@ -57,6 +57,7 @@ database.exec(`
     CREATE TABLE IF NOT EXISTS admin_access_codes (
         email TEXT PRIMARY KEY,
         code_hash TEXT NOT NULL,
+        code_length INTEGER NOT NULL DEFAULT 8,
         expires_at INTEGER NOT NULL
     );
     CREATE TABLE IF NOT EXISTS admin_sessions (
@@ -113,6 +114,10 @@ database.exec(`
     CREATE INDEX IF NOT EXISTS consultation_chat_messages_index ON consultation_chat_messages(chat_id, id);
 `);
 database.pragma("foreign_keys = ON");
+const adminAccessCodeColumns = new Set(database.pragma("table_info(admin_access_codes)").map((column) => column.name));
+if (!adminAccessCodeColumns.has("code_length")) {
+    database.exec("ALTER TABLE admin_access_codes ADD COLUMN code_length INTEGER NOT NULL DEFAULT 8");
+}
 const consultationChatColumns = new Set(database.pragma("table_info(consultation_chats)").map((column) => column.name));
 for (const [name, definition] of [
     ["visitor_email", "TEXT"],
@@ -312,6 +317,11 @@ const adminByEmail = new Map(adminAccounts.map((account) => [account.email, acco
 const SESSION_COOKIE = "lawyer_admin_session";
 const SESSION_TTL = 14 * 24 * 60 * 60 * 1000;
 const ACCESS_CODE_TTL = 7 * 24 * 60 * 60 * 1000;
+const Length = 20;
+const ADMIN_CODE_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const ADMIN_CODE_DIGITS = "0123456789";
+const ADMIN_CODE_SYMBOLS = "$#_-@";
+const ADMIN_CODE_CHARACTERS = `${ADMIN_CODE_LETTERS}${ADMIN_CODE_DIGITS}${ADMIN_CODE_SYMBOLS}`;
 const ONLINE_WINDOW = 90 * 1000;
 const loginAttempts = new Map();
 const consultationRequestAttempts = new Map();
@@ -324,8 +334,28 @@ const mailTransport = process.env.SMTP_HOST
     })
     : null;
 
+if (!Number.isSafeInteger(Length) || Length < 3 || Length > 128) {
+    throw new Error("Length must be an integer between 3 and 128.");
+}
+
 function hashValue(value) {
     return createHash("sha256").update(value).digest("hex");
+}
+
+function createAdminAccessCode() {
+    const codeCharacters = [
+        ADMIN_CODE_LETTERS[randomInt(ADMIN_CODE_LETTERS.length)],
+        ADMIN_CODE_DIGITS[randomInt(ADMIN_CODE_DIGITS.length)],
+        ADMIN_CODE_SYMBOLS[randomInt(ADMIN_CODE_SYMBOLS.length)],
+    ];
+    while (codeCharacters.length < Length) {
+        codeCharacters.push(ADMIN_CODE_CHARACTERS[randomInt(ADMIN_CODE_CHARACTERS.length)]);
+    }
+    for (let shuffleIndex = codeCharacters.length - 1; shuffleIndex > 0; shuffleIndex -= 1) {
+        const swapIndex = randomInt(shuffleIndex + 1);
+        [codeCharacters[shuffleIndex], codeCharacters[swapIndex]] = [codeCharacters[swapIndex], codeCharacters[shuffleIndex]];
+    }
+    return codeCharacters.join("");
 }
 
 function getCookie(req, name) {
@@ -439,11 +469,13 @@ app.post("/api/admin/login", (req, res) => {
     if (attempts.count > 8) return res.status(429).json({ error: "محاولات كثيرة. حاول بعد 15 دقيقة." });
     if (!mailTransport) return res.status(503).json({ error: "إعداد إرسال البريد غير مكتمل على السيرفر." });
 
-    const accessCode = database.prepare("SELECT code_hash, expires_at FROM admin_access_codes WHERE email = ?").get(email);
+    const accessCode = database.prepare("SELECT code_hash, code_length, expires_at FROM admin_access_codes WHERE email = ?").get(email);
     const submittedHash = hashValue(code);
     const codeMatches = accessCode && accessCode.expires_at > now
+        && code.length === accessCode.code_length
+        && /^[A-Za-z0-9$#_@-]+$/.test(code)
         && timingSafeEqual(Buffer.from(accessCode.code_hash, "hex"), Buffer.from(submittedHash, "hex"));
-    if (!account || !/^\d{8}$/.test(code) || !codeMatches) {
+    if (!account || !codeMatches) {
         return res.status(401).json({ error: "البريد أو كود الدخول غير صحيح أو منتهي الصلاحية." });
     }
 
@@ -474,7 +506,7 @@ app.post("/api/admin/access-codes/rotate", requireAdmin, requireMasterAdmin, asy
     const failed = [];
     const expiresAt = Date.now() + ACCESS_CODE_TTL;
     for (const account of adminAccounts) {
-        const code = String(randomInt(10000000, 100000000));
+        const code = createAdminAccessCode();
         try {
             await mailTransport.sendMail({
                 from: process.env.SMTP_FROM || process.env.SMTP_USER,
@@ -483,9 +515,10 @@ app.post("/api/admin/access-codes/rotate", requireAdmin, requireMasterAdmin, asy
                 text: `مرحبًا ${account.name || ""}\n\nتم إصدار كود دخول جديد: ${code}\n\nالكود صالح لمدة 7 أيام وينتهي في ${new Date(expiresAt).toLocaleString("ar-EG")}. الأكواد والجلسات السابقة لهذا الحساب لم تعد صالحة.`,
             });
             database.prepare(`
-                INSERT INTO admin_access_codes (email, code_hash, expires_at) VALUES (?, ?, ?)
-                ON CONFLICT(email) DO UPDATE SET code_hash = excluded.code_hash, expires_at = excluded.expires_at
-            `).run(account.email, hashValue(code), expiresAt);
+                INSERT INTO admin_access_codes (email, code_hash, code_length, expires_at) VALUES (?, ?, ?, ?)
+                ON CONFLICT(email) DO UPDATE SET code_hash = excluded.code_hash,
+                    code_length = excluded.code_length, expires_at = excluded.expires_at
+            `).run(account.email, hashValue(code), Length, expiresAt);
             database.prepare("DELETE FROM admin_presence WHERE email = ? AND session_hash != ?")
                 .run(account.email, req.admin.sessionHash);
             database.prepare("DELETE FROM admin_sessions WHERE email = ? AND token_hash != ?")
@@ -913,10 +946,10 @@ async function sendWeeklyAdminCodes() {
 
     const now = Date.now();
     for (const account of adminAccounts) {
-        const currentCode = database.prepare("SELECT expires_at FROM admin_access_codes WHERE email = ?").get(account.email);
-        if (currentCode?.expires_at > now) continue;
+        const currentCode = database.prepare("SELECT code_length, expires_at FROM admin_access_codes WHERE email = ?").get(account.email);
+        if (currentCode?.expires_at > now && currentCode.code_length === Length) continue;
 
-        const code = String(randomInt(10000000, 100000000));
+        const code = createAdminAccessCode();
         const expiresAt = now + ACCESS_CODE_TTL;
         try {
             await mailTransport.sendMail({
@@ -926,9 +959,10 @@ async function sendWeeklyAdminCodes() {
                 text: `مرحبًا ${account.name || ""}\n\nكود دخول لوحة الإدارة: ${code}\n\nالكود صالح لمدة 7 أيام وينتهي في ${new Date(expiresAt).toLocaleString("ar-EG")}. لا تشاركه مع أي شخص.`,
             });
             database.prepare(`
-                INSERT INTO admin_access_codes (email, code_hash, expires_at) VALUES (?, ?, ?)
-                ON CONFLICT(email) DO UPDATE SET code_hash = excluded.code_hash, expires_at = excluded.expires_at
-            `).run(account.email, hashValue(code), expiresAt);
+                INSERT INTO admin_access_codes (email, code_hash, code_length, expires_at) VALUES (?, ?, ?, ?)
+                ON CONFLICT(email) DO UPDATE SET code_hash = excluded.code_hash,
+                    code_length = excluded.code_length, expires_at = excluded.expires_at
+            `).run(account.email, hashValue(code), Length, expiresAt);
             console.log(`Admin access code sent to ${account.email}.`);
         } catch (error) {
             console.error(`Could not send an admin access code to ${account.email}: ${error.message}`);
