@@ -1,6 +1,8 @@
 import { useState } from "react";
 import LineThrow from "../LineThrow";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 function MoreSection() {
   const [name, setName] = useState("");
   const [messege, setMessege] = useState("نوع القضيه اللي هيظهر لك");
@@ -18,7 +20,7 @@ function MoreSection() {
     setMessege("جاري إرسال الطلب للسيرفر والتحليل...");
 
     try {
-      const response = await fetch("http://localhost:5000/api/analyze-case", {
+      const response = await fetch(`${API_URL}/api/analyze-case`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

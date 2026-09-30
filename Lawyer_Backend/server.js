@@ -171,6 +171,7 @@ for (const column of ["visitor_name TEXT", "visitor_phone TEXT"]) {
 const allowedOrigins = new Set([
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://mohammedsaadweb.vercel.app",
     process.env.FRONTEND_ORIGIN,
 ].filter(Boolean));
 app.use(cors({
