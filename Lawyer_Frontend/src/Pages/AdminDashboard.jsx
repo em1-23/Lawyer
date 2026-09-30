@@ -141,10 +141,10 @@ function AdminDashboard() {
         credentials: "include",
       })
       const data = await response.json()
-      if (!response.ok && !data.sent?.length) throw new Error(data.error || "تعذر تجديد الأكواد.")
+      if (!response.ok && !data.sent?.length && !data.failed?.length) throw new Error(data.error || "تعذر تجديد الأكواد.")
       setRotationNotice(data.failed?.length
-        ? `تم الإرسال إلى ${data.sent.length} أدمن، وتعذر الإرسال إلى: ${data.failed.join("، ")}`
-        : `تم إرسال أكواد جديدة إلى ${data.sent.length} أدمن.`)
+        ? `قبل خادم البريد ${data.sent.length} رسالة، وتعذر قبول الإرسال إلى: ${data.failed.join("، ")}`
+        : `قبل خادم البريد رسائل الأكواد إلى ${data.sent.length} أدمن.`)
       setCodeExpiresAt(data.expiresAt)
     } catch (rotationError) {
       setError(rotationError.message)
@@ -163,7 +163,7 @@ function AdminDashboard() {
         <label htmlFor="admin-email">البريد الإلكتروني</label>
         <input id="admin-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required />
         <label htmlFor="admin-code">كود الدخول المرسل إلى بريدك</label>
-        <input id="admin-code" type="text" inputMode="text" autoCapitalize="off" autoCorrect="off" spellCheck={false} autoComplete="one-time-code" pattern="[A-Za-z0-9$#_@-]{3,128}" maxLength={128} value={code} onChange={(event) => setCode(event.target.value)} required />
+        <input id="admin-code" type="text" inputMode="text" autoCapitalize="off" autoCorrect="off" spellCheck={false} autoComplete="one-time-code" pattern="[A-Za-z0-9]{3,128}" maxLength={128} value={code} onChange={(event) => setCode(event.target.value)} required />
         {error && <p className="AdminError" role="alert">{error}</p>}
         <button className="AdminLoadButton" type="submit" disabled={isSubmitting}>{isSubmitting ? "جارٍ التحقق..." : "دخول آمن"}</button>
       </form>

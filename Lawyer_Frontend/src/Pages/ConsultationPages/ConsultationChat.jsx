@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import ConsultationAutomaticMessages from "./ConsultationAutomaticMessages"
+import ConsultationAttachmentImage from "./ConsultationAttachmentImage"
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
 const CHAT_STORAGE_KEY = "lawyer-consultation-chat"
@@ -33,9 +34,11 @@ function ConsultationChat() {
   const [adminIsTyping, setAdminIsTyping] = useState(false)
   const [isStarting, setIsStarting] = useState(false)
   const [isSending, setIsSending] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [error, setError] = useState("")
   const [notice, setNotice] = useState("")
   const typingTimer = useRef(null)
+  const imageInputRef = useRef(null)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -104,7 +107,7 @@ function ConsultationChat() {
       }
     }
     loadMessages()
-    const timer = window.setInterval(loadMessages, 3000)
+    const timer = window.setInterval(loadMessages, 1500)
     return () => {
       active = false
       window.clearInterval(timer)
@@ -166,6 +169,32 @@ function ConsultationChat() {
       setError(requestError.message)
     } finally {
       setIsSending(false)
+    }
+  }
+
+  async function sendImage(event) {
+    const file = event.target.files?.[0]
+    event.target.value = ""
+    if (!file || !savedChat || isUploadingImage || availability !== "open") return
+    setIsUploadingImage(true)
+    setError("")
+    try {
+      const formData = new FormData()
+      formData.append("image", file)
+      formData.append("caption", messageText.trim())
+      const response = await fetch(`${API_URL}/api/consultation-chats/${encodeURIComponent(savedChat.chatId)}/attachments`, {
+        method: "POST",
+        headers: { "x-consultation-token": savedChat.visitorToken },
+        body: formData,
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "تعذر إرسال الصورة.")
+      setMessages((current) => [...current, data.message])
+      setMessageText("")
+    } catch (uploadError) {
+      setError(uploadError.message)
+    } finally {
+      setIsUploadingImage(false)
     }
   }
 
@@ -258,6 +287,7 @@ function ConsultationChat() {
                 ) : (
                   <>
                     <p>{message.content}{message.edited_at && <small className="ConsultationEditedLabel"> (تم التعديل)</small>}</p>
+                    {message.attachmentId && <ConsultationAttachmentImage apiUrl={API_URL} chatId={savedChat.chatId} attachmentId={message.attachmentId} accessToken={savedChat.visitorToken} alt={message.attachmentName} />}
                     {message.canEdit && <div className="ConsultationMessageActions">
                       <button type="button" onClick={() => beginEditMessage(message)}>تعديل</button>
                       <button type="button" onClick={() => deleteOwnMessage(message.id)}>حذف</button>
@@ -272,6 +302,8 @@ function ConsultationChat() {
           {error && <p className="AdminError" role="alert">{error}</p>}
           {availability === "open" ? (
             <form className="ConsultationChatComposer" onSubmit={sendMessage}>
+              <input ref={imageInputRef} className="ConsultationImageInput" type="file" accept="image/jpeg,image/png,image/webp" onChange={sendImage} />
+              <button type="button" className="ConsultationAttachButton" onClick={() => imageInputRef.current?.click()} disabled={isUploadingImage}>{isUploadingImage ? "جارٍ رفع الصورة..." : "إضافة صورة"}</button>
               <textarea value={messageText} onChange={(event) => handleMessageChange(event.target.value)} placeholder="اكتب رسالتك..." rows={2} maxLength={4000} aria-label="رسالتك" />
               <button type="submit" disabled={isSending || !messageText.trim()}>{isSending ? "جارٍ الإرسال..." : "إرسال"}</button>
             </form>

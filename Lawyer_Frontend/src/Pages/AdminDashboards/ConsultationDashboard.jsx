@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import ConsultationAttachmentImage from "../ConsultationPages/ConsultationAttachmentImage"
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
 
@@ -18,9 +19,11 @@ function ConsultationDashboard() {
   const [error, setError] = useState("")
   const [notice, setNotice] = useState("")
   const [isSending, setIsSending] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [isScheduling, setIsScheduling] = useState(false)
   const [visitorIsTyping, setVisitorIsTyping] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const imageInputRef = useRef(null)
 
   useEffect(() => {
     let active = true
@@ -40,7 +43,7 @@ function ConsultationDashboard() {
       }
     }
     loadChats()
-    const timer = window.setInterval(loadChats, 5000)
+    const timer = window.setInterval(loadChats, 3000)
     return () => {
       active = false
       window.clearInterval(timer)
@@ -70,7 +73,7 @@ function ConsultationDashboard() {
       }
     }
     loadChat()
-    const timer = window.setInterval(loadChat, 3000)
+    const timer = window.setInterval(loadChat, 1500)
     return () => {
       active = false
       window.clearInterval(timer)
@@ -104,6 +107,32 @@ function ConsultationDashboard() {
       setError(requestError.message)
     } finally {
       setIsSending(false)
+    }
+  }
+
+  async function sendImage(event) {
+    const file = event.target.files?.[0]
+    event.target.value = ""
+    if (!file || !selectedChatId || isUploadingImage || selectedChat?.chat.availability !== "open") return
+    setIsUploadingImage(true)
+    setError("")
+    try {
+      const formData = new FormData()
+      formData.append("image", file)
+      formData.append("caption", messageText.trim())
+      const response = await fetch(`${API_URL}/api/admin/consultation-chats/${encodeURIComponent(selectedChatId)}/attachments`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "تعذر إرسال الصورة.")
+      setSelectedChat((current) => current ? { ...current, messages: [...current.messages, data.message] } : current)
+      setMessageText("")
+    } catch (uploadError) {
+      setError(uploadError.message)
+    } finally {
+      setIsUploadingImage(false)
     }
   }
 
@@ -279,6 +308,7 @@ function ConsultationDashboard() {
                     ) : (
                       <>
                         <p>{message.content}{message.edited_at && <small className="ConsultationEditedLabel"> (تم التعديل)</small>}</p>
+                        {message.attachmentId && <ConsultationAttachmentImage apiUrl={API_URL} chatId={selectedChatId} attachmentId={message.attachmentId} isAdmin alt={message.attachmentName} />}
                         {message.canEdit && selectedChat.chat.availability === "open" && <div className="ConsultationMessageActions">
                           <button type="button" onClick={() => beginEditMessage(message)}>تعديل</button>
                           <button type="button" onClick={() => deleteOwnMessage(message.id)}>حذف</button>
@@ -290,6 +320,8 @@ function ConsultationDashboard() {
                   {visitorIsTyping && <div className="ConsultationTyping" aria-label="الزائر يكتب"><i /><i /><i /></div>}
               </div>
                 {selectedChat.chat.availability === "open" && <form className="AdminConsultationComposer" onSubmit={sendReply}>
+                  <input ref={imageInputRef} className="ConsultationImageInput" type="file" accept="image/jpeg,image/png,image/webp" onChange={sendImage} />
+                  <button type="button" className="ConsultationAttachButton" onClick={() => imageInputRef.current?.click()} disabled={isUploadingImage}>{isUploadingImage ? "جارٍ رفع الصورة..." : "إضافة صورة"}</button>
                   <textarea value={messageText} onChange={(event) => handleAdminMessageChange(event.target.value)} placeholder="اكتب ردك..." rows={2} maxLength={4000} aria-label="الرد" />
                 <button type="submit" disabled={isSending || !messageText.trim()}>{isSending ? "جارٍ الإرسال..." : "إرسال الرد"}</button>
               </form>}

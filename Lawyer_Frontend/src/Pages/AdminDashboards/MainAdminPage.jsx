@@ -15,7 +15,7 @@ function MainAdminPage() {
       id:"admin-chats",
       Name:"المحادثات"
     },
-    ...(["main_admin", "master_admin"].includes(admin.role) ? [{ id:"admin-consultation", Name:"الأستشارات" }] : []),
+    { id:"admin-consultation", Name:"الأستشارات" },
   ]
   return (
     <div className="Section">

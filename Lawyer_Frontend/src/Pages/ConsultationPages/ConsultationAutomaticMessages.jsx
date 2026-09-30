@@ -1,6 +1,7 @@
 import Servicess from '../Services.json'
 
 function ConsultationAutomaticMessages(){
+  let Name = "مكتب محمد سعد أبو الفرج"
   let AssistantName = "Mark 1.0"
   let TimeTaken = 20
   function FirstOne() {
@@ -10,7 +11,7 @@ function ConsultationAutomaticMessages(){
           <span className="Name">{AssistantName}</span>
         </div>
         <div className="MessageBody">
-          أهلا وسهلا في <span className="Special">{localStorage.Name}</span> نقدم جميع خدمات الشركات : <br />
+          أهلا وسهلا في <span className="Special">{Name}</span> نقدم جميع خدمات الشركات : <br />
           <ul className='MessageList'>
             {Servicess.slice(1 , 5).map((N)=>(
               <li key={N.id}>{N.id - 1}. {N.Name}</li>
@@ -30,7 +31,7 @@ function ConsultationAutomaticMessages(){
           <span className="Name">{AssistantName}</span>
         </div>
         <div className="MessageBody">
-          أهلا بيك في أستشارة <span className="Special">{localStorage.Name}</span> <br />
+          أهلا بيك في أستشارة <span className="Special">{Name}</span> <br />
         </div>
       </div>
     )       

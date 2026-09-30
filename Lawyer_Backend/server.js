@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash, randomBytes, randomInt, randomUUID, timingSafeEqual } from "node:crypto";
 import nodemailer from "nodemailer";
+import multer from "multer";
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(currentDirectory, ".env") });
@@ -58,6 +59,7 @@ database.exec(`
         email TEXT PRIMARY KEY,
         code_hash TEXT NOT NULL,
         code_length INTEGER NOT NULL DEFAULT 8,
+        code_format INTEGER NOT NULL DEFAULT 1,
         expires_at INTEGER NOT NULL
     );
     CREATE TABLE IF NOT EXISTS admin_sessions (
@@ -102,6 +104,17 @@ database.exec(`
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (chat_id) REFERENCES consultation_chats(id) ON DELETE CASCADE
     );
+    CREATE TABLE IF NOT EXISTS consultation_chat_attachments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        chat_id INTEGER NOT NULL,
+        message_id INTEGER NOT NULL UNIQUE,
+        original_name TEXT NOT NULL,
+        mime_type TEXT NOT NULL,
+        data BLOB NOT NULL,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (chat_id) REFERENCES consultation_chats(id) ON DELETE CASCADE,
+        FOREIGN KEY (message_id) REFERENCES consultation_chat_messages(id) ON DELETE CASCADE
+    );
     CREATE TABLE IF NOT EXISTS consultation_chat_email_links (
         token_hash TEXT PRIMARY KEY,
         chat_id INTEGER NOT NULL,
@@ -117,6 +130,9 @@ database.pragma("foreign_keys = ON");
 const adminAccessCodeColumns = new Set(database.pragma("table_info(admin_access_codes)").map((column) => column.name));
 if (!adminAccessCodeColumns.has("code_length")) {
     database.exec("ALTER TABLE admin_access_codes ADD COLUMN code_length INTEGER NOT NULL DEFAULT 8");
+}
+if (!adminAccessCodeColumns.has("code_format")) {
+    database.exec("ALTER TABLE admin_access_codes ADD COLUMN code_format INTEGER NOT NULL DEFAULT 1");
 }
 const consultationChatColumns = new Set(database.pragma("table_info(consultation_chats)").map((column) => column.name));
 for (const [name, definition] of [
@@ -165,6 +181,10 @@ app.use(cors({
     credentials: true,
 }));
 app.use(express.json());
+const consultationImageUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+});
 const groq = new OpenAI({
     apiKey: process.env.GROQ_API_KEY,
     baseURL: "https://api.groq.com/openai/v1"
@@ -222,7 +242,7 @@ function textIncludesToken(text, token) {
 function findRoute(value) {
     const text = normalizeText(value);
     const asksForLawyersPage = /اعرف\s+(المحامين|المحامي)|شوف\s+(المحامين|المحامي)|صفحه\s+(المحامين|المحامي)|صفحة\s+(المحامين|المحامي)|قائمه\s+(المحامين|المحامي)|قائمة\s+(المحامين|المحامي)|lawyers?\s+page|our[- ]lawyers/.test(text);
-    const mentionsCase = /قضيه|قضية|جنايات|جنائي|جنائية|نصب|سرقه|سرقة|قتل|ضرب|تبديد|طلاق|خلع|زواج|نفقة|ميراث|عقار|أرض|شركه|شركة|ضرائب|تجاري|criminal|divorce|fraud|inheritance/i.test(text);
+    const mentionsCase = /شركه|شركة|ضرائب|تجاري|criminal|divorce|fraud|inheritance/i.test(text);
     if (asksForLawyersPage && !mentionsCase) {
         return { route: "/our-lawyers", type: "lawyers" };
     }
@@ -245,7 +265,7 @@ function findRoute(value) {
 
 function findNearestLawyer(value) {
     const text = normalizeText(value);
-    const caseWords = /قضيه|قضية|جنايات|جنائي|جنائية|نصب|سرقه|سرقة|قتل|ضرب|تبديد|طلاق|خلع|زواج|نفقة|ميراث|عقار|أرض|شركه|شركة|ضرائب|تجاري|administrative|criminal|divorce|fraud|inheritance|real estate/i;
+    const caseWords = /أرض|شركه|شركة|ضرائب|تجاري|administrative|criminal|divorce|fraud|inheritance|real estate/i;
     if (!caseWords.test(text)) return null;
 
     const rankedLawyers = lawyers.map((lawyer) => {
@@ -314,14 +334,16 @@ try {
 }
 
 const adminByEmail = new Map(adminAccounts.map((account) => [account.email, account]));
+const adminLoginAlertEmail = process.env.ADMIN_LOGIN_ALERT_EMAIL?.trim().toLowerCase()
+    || adminAccounts.find((account) => account.role === "master_admin")?.email;
 const SESSION_COOKIE = "lawyer_admin_session";
 const SESSION_TTL = 14 * 24 * 60 * 60 * 1000;
 const ACCESS_CODE_TTL = 7 * 24 * 60 * 60 * 1000;
 const Length = 20;
+const ADMIN_CODE_FORMAT_VERSION = 2;
 const ADMIN_CODE_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const ADMIN_CODE_DIGITS = "0123456789";
-const ADMIN_CODE_SYMBOLS = "$#_-@";
-const ADMIN_CODE_CHARACTERS = `${ADMIN_CODE_LETTERS}${ADMIN_CODE_DIGITS}${ADMIN_CODE_SYMBOLS}`;
+const ADMIN_CODE_CHARACTERS = `${ADMIN_CODE_LETTERS}${ADMIN_CODE_DIGITS}`;
 const ONLINE_WINDOW = 90 * 1000;
 const loginAttempts = new Map();
 const consultationRequestAttempts = new Map();
@@ -346,7 +368,6 @@ function createAdminAccessCode() {
     const codeCharacters = [
         ADMIN_CODE_LETTERS[randomInt(ADMIN_CODE_LETTERS.length)],
         ADMIN_CODE_DIGITS[randomInt(ADMIN_CODE_DIGITS.length)],
-        ADMIN_CODE_SYMBOLS[randomInt(ADMIN_CODE_SYMBOLS.length)],
     ];
     while (codeCharacters.length < Length) {
         codeCharacters.push(ADMIN_CODE_CHARACTERS[randomInt(ADMIN_CODE_CHARACTERS.length)]);
@@ -418,8 +439,8 @@ function requireMasterAdmin(req, res, next) {
 }
 
 function requireConsultationAdmin(req, res, next) {
-    if (req.admin?.role !== "main_admin" && req.admin?.role !== "master_admin") {
-        return res.status(403).json({ error: "محادثات الاستشارات متاحة للـ Main Admin والـ Master Admin فقط." });
+    if (!ADMIN_ROLES.has(req.admin?.role)) {
+        return res.status(403).json({ error: "محادثات الاستشارات متاحة للأدمنز المسجلين فقط." });
     }
     return next();
 }
@@ -443,8 +464,120 @@ function getConsultationChatState(chat) {
 
 async function sendEmail(to, subject, text) {
     if (!mailTransport || !(process.env.SMTP_FROM || process.env.SMTP_USER)) return false;
-    await mailTransport.sendMail({ from: process.env.SMTP_FROM || process.env.SMTP_USER, to, subject, text });
+    const delivery = await mailTransport.sendMail({ from: process.env.SMTP_FROM || process.env.SMTP_USER, to, subject, text });
+    assertEmailRecipientAccepted(delivery, to);
     return true;
+}
+
+function assertEmailRecipientAccepted(result, recipient) {
+    const normalizedRecipient = recipient.toLowerCase();
+    const accepted = result.accepted?.some((entry) => {
+        const address = typeof entry === "string" ? entry : entry?.address;
+        return typeof address === "string" && address.toLowerCase() === normalizedRecipient;
+    });
+    if (accepted) return;
+
+    const rejection = result.rejectedErrors?.find((error) => error?.response)?.response;
+    throw new Error(typeof rejection === "string" ? rejection : "SMTP did not accept the recipient.");
+}
+
+function handleConsultationImageUpload(req, res, next) {
+    consultationImageUpload.single("image")(req, res, (error) => {
+        if (!error) return next();
+        if (error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE") {
+            return res.status(413).json({ error: "حجم الصورة يجب ألا يتجاوز 5 ميجابايت." });
+        }
+        return res.status(400).json({ error: "تعذر قراءة الصورة المرفقة." });
+    });
+}
+
+function getConsultationImageMimeType(buffer) {
+    if (buffer.length >= 8 && buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) return "image/png";
+    if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return "image/jpeg";
+    if (buffer.length >= 12 && buffer.toString("ascii", 0, 4) === "RIFF" && buffer.toString("ascii", 8, 12) === "WEBP") return "image/webp";
+    return "";
+}
+
+function sendConsultationImage(res, chatId, attachmentId) {
+    const attachment = database.prepare(`
+        SELECT mime_type, data FROM consultation_chat_attachments WHERE id = ? AND chat_id = ?
+    `).get(attachmentId, chatId);
+    if (!attachment) return res.status(404).json({ error: "الصورة غير موجودة." });
+    res.set({
+        "Content-Type": attachment.mime_type,
+        "Content-Disposition": "inline",
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "private, no-store",
+    });
+    return res.send(attachment.data);
+}
+
+function saveConsultationAttachmentMessage({ chatId, senderRole, senderName, senderId, caption, file, mimeType }) {
+    const safeName = file.originalname.replace(/[\\/]/g, "_").replace(/[\u0000-\u001f]/g, "").slice(0, 160) || "image";
+    const content = caption || `صورة مرفقة: ${safeName}`;
+    const saveMessage = database.transaction(() => {
+        const inserted = database.prepare(`
+            INSERT INTO consultation_chat_messages (chat_id, sender_role, sender_name, sender_id, content)
+            VALUES (?, ?, ?, ?, ?)
+        `).run(chatId, senderRole, senderName, senderId, content);
+        database.prepare(`
+            INSERT INTO consultation_chat_attachments (chat_id, message_id, original_name, mime_type, data)
+            VALUES (?, ?, ?, ?, ?)
+        `).run(chatId, inserted.lastInsertRowid, safeName, mimeType, file.buffer);
+        database.prepare(`
+            UPDATE consultation_chats SET visitor_typing_until = 0, admin_typing_until = 0,
+                updated_at = CURRENT_TIMESTAMP WHERE id = ?
+        `).run(chatId);
+        return database.prepare(`
+            SELECT message.id, message.sender_role, message.sender_name, message.content,
+                message.created_at, message.edited_at, attachment.id AS attachment_id,
+                attachment.mime_type AS attachment_mime_type, attachment.original_name AS attachment_name
+            FROM consultation_chat_messages AS message
+            JOIN consultation_chat_attachments AS attachment ON attachment.message_id = message.id
+            WHERE message.id = ?
+        `).get(inserted.lastInsertRowid);
+    });
+    const message = saveMessage();
+    return {
+        ...message,
+        attachmentId: message.attachment_id,
+        attachmentMimeType: message.attachment_mime_type,
+        attachmentName: message.attachment_name,
+        canEdit: senderRole === "visitor" || senderRole === "admin",
+    };
+}
+
+function validateConsultationImage(file) {
+    if (!file) return "اختر صورة لإرسالها.";
+    const detectedMimeType = getConsultationImageMimeType(file.buffer);
+    if (!detectedMimeType || detectedMimeType !== file.mimetype) {
+        return "الصيغ المدعومة هي JPEG وPNG وWebP فقط.";
+    }
+    return "";
+}
+
+function notifyAdminLogin(req, email, outcome, device = {}) {
+    if (!adminLoginAlertEmail) return;
+    const originCandidate = req.get("origin") || req.get("referer") || process.env.FRONTEND_ORIGIN || "";
+    let loginSite = "غير متاح";
+    try {
+        loginSite = new URL(originCandidate).origin;
+    } catch {}
+    const deviceLabel = typeof device.device === "string" ? device.device.slice(0, 100) : "غير معروف";
+    const userAgent = (req.get("user-agent") || "غير متاح").slice(0, 500);
+    const details = [
+        `النتيجة: ${outcome}`,
+        `البريد المُدخل: ${email || "غير مُدخل"}`,
+        `موقع الدخول: ${loginSite}`,
+        `IP: ${req.ip || "غير متاح"}`,
+        `الجهاز: ${deviceLabel}`,
+        `المتصفح (User-Agent): ${userAgent}`,
+        `الطريقة: البريد الإلكتروني + كود دخول خاص بالحساب (لم يتم إرسال الكود).`,
+        `الوقت (UTC): ${new Date().toISOString()}`,
+    ].join("\n");
+
+    void sendEmail(adminLoginAlertEmail, "تنبيه محاولة دخول لوحة الإدارة", details)
+        .catch((error) => console.error(`Could not send an admin login alert: ${error.message}`));
 }
 
 app.use("/api/admin", (req, res, next) => {
@@ -466,16 +599,20 @@ app.post("/api/admin/login", (req, res) => {
     }
     attempts.count += 1;
     loginAttempts.set(attemptKey, attempts);
-    if (attempts.count > 8) return res.status(429).json({ error: "محاولات كثيرة. حاول بعد 15 دقيقة." });
+    if (attempts.count > 8) {
+        if (attempts.count === 9) notifyAdminLogin(req, email, "مرفوضة: تم تجاوز حد المحاولات", req.body?.device);
+        return res.status(429).json({ error: "محاولات كثيرة. حاول بعد 15 دقيقة." });
+    }
     if (!mailTransport) return res.status(503).json({ error: "إعداد إرسال البريد غير مكتمل على السيرفر." });
 
     const accessCode = database.prepare("SELECT code_hash, code_length, expires_at FROM admin_access_codes WHERE email = ?").get(email);
     const submittedHash = hashValue(code);
     const codeMatches = accessCode && accessCode.expires_at > now
         && code.length === accessCode.code_length
-        && /^[A-Za-z0-9$#_@-]+$/.test(code)
+        && /^[A-Za-z0-9]+$/.test(code)
         && timingSafeEqual(Buffer.from(accessCode.code_hash, "hex"), Buffer.from(submittedHash, "hex"));
     if (!account || !codeMatches) {
+        notifyAdminLogin(req, email, "فاشلة: البريد أو الكود غير صحيح/منتهي", req.body?.device);
         return res.status(401).json({ error: "البريد أو كود الدخول غير صحيح أو منتهي الصلاحية." });
     }
 
@@ -486,6 +623,7 @@ app.post("/api/admin/login", (req, res) => {
     updatePresence(req, sessionHash, account.email, req.body.device);
     setSessionCookie(res, sessionToken);
     loginAttempts.delete(attemptKey);
+    notifyAdminLogin(req, email, "ناجحة", req.body?.device);
     return res.json({ admin: { email: account.email, name: account.name, role: account.role } });
 });
 
@@ -508,17 +646,18 @@ app.post("/api/admin/access-codes/rotate", requireAdmin, requireMasterAdmin, asy
     for (const account of adminAccounts) {
         const code = createAdminAccessCode();
         try {
-            await mailTransport.sendMail({
+            const delivery = await mailTransport.sendMail({
                 from: process.env.SMTP_FROM || process.env.SMTP_USER,
                 to: account.email,
                 subject: "كود دخول جديد للوحة إدارة المنصة",
-                text: `مرحبًا ${account.name || ""}\n\nتم إصدار كود دخول جديد: ${code}\n\nالكود صالح لمدة 7 أيام وينتهي في ${new Date(expiresAt).toLocaleString("ar-EG")}. الأكواد والجلسات السابقة لهذا الحساب لم تعد صالحة.`,
-            });
+                text: `مرحبًا أدمن : ${account.name || ""}\n\nتم إصدار كود دخول جديد: \n\n\n ${code} \n \n\nالكود صالح لمدة 7 أيام وينتهي في ${new Date(expiresAt).toLocaleString("ar-EG")}. الأكواد والجلسات السابقة لهذا الحساب لم تعد صالحة.`,
+            })
+            assertEmailRecipientAccepted(delivery, account.email);
             database.prepare(`
-                INSERT INTO admin_access_codes (email, code_hash, code_length, expires_at) VALUES (?, ?, ?, ?)
+                INSERT INTO admin_access_codes (email, code_hash, code_length, code_format, expires_at) VALUES (?, ?, ?, ?, ?)
                 ON CONFLICT(email) DO UPDATE SET code_hash = excluded.code_hash,
-                    code_length = excluded.code_length, expires_at = excluded.expires_at
-            `).run(account.email, hashValue(code), Length, expiresAt);
+                    code_length = excluded.code_length, code_format = excluded.code_format, expires_at = excluded.expires_at
+            `).run(account.email, hashValue(code), Length, ADMIN_CODE_FORMAT_VERSION, expiresAt);
             database.prepare("DELETE FROM admin_presence WHERE email = ? AND session_hash != ?")
                 .run(account.email, req.admin.sessionHash);
             database.prepare("DELETE FROM admin_sessions WHERE email = ? AND token_hash != ?")
@@ -648,10 +787,20 @@ app.get("/api/admin/consultation-chats/:chatId", requireAdmin, requireConsultati
     `)
         .get(req.params.chatId);
     if (!chat) return res.status(404).json({ error: "محادثة الاستشارة غير موجودة." });
-    const messages = database.prepare("SELECT id, sender_role, sender_name, sender_id, content, created_at, edited_at FROM consultation_chat_messages WHERE chat_id = ? ORDER BY id ASC")
+    const messages = database.prepare(`
+        SELECT message.id, message.sender_role, message.sender_name, message.sender_id, message.content,
+            message.created_at, message.edited_at, attachment.id AS attachment_id,
+            attachment.mime_type AS attachment_mime_type, attachment.original_name AS attachment_name
+        FROM consultation_chat_messages AS message
+        LEFT JOIN consultation_chat_attachments AS attachment ON attachment.message_id = message.id
+        WHERE message.chat_id = ? ORDER BY message.id ASC
+    `)
         .all(chat.id)
-        .map(({ sender_id: senderId, ...message }) => ({
+        .map(({ sender_id: senderId, attachment_id: attachmentId, attachment_mime_type: attachmentMimeType, attachment_name: attachmentName, ...message }) => ({
             ...message,
+            attachmentId,
+            attachmentMimeType,
+            attachmentName,
             canEdit: message.sender_role === "admin" && senderId === req.admin.email,
         }));
     const availability = getConsultationChatState(chat);
@@ -674,6 +823,32 @@ app.post("/api/admin/consultation-chats/:chatId/messages", requireAdmin, require
     const message = database.prepare("SELECT id, sender_role, sender_name, content, created_at, edited_at FROM consultation_chat_messages WHERE id = ?")
         .get(inserted.lastInsertRowid);
     return res.status(201).json({ message: { ...message, canEdit: true } });
+});
+
+app.post("/api/admin/consultation-chats/:chatId/attachments", requireAdmin, requireConsultationAdmin, handleConsultationImageUpload, (req, res) => {
+    const chat = database.prepare("SELECT * FROM consultation_chats WHERE public_id = ?").get(req.params.chatId);
+    if (!chat) return res.status(404).json({ error: "محادثة الاستشارة غير موجودة." });
+    if (getConsultationChatState(chat) !== "open") return res.status(409).json({ error: "إرفاق الصور متاح خلال موعد المحادثة فقط." });
+    const imageError = validateConsultationImage(req.file);
+    if (imageError) return res.status(400).json({ error: imageError });
+    const caption = typeof req.body?.caption === "string" ? req.body.caption.trim() : "";
+    if (caption.length > 4000) return res.status(400).json({ error: "لا يتجاوز وصف الصورة 4000 حرف." });
+    const message = saveConsultationAttachmentMessage({
+        chatId: chat.id,
+        senderRole: "admin",
+        senderName: req.admin.name || req.admin.email,
+        senderId: req.admin.email,
+        caption,
+        file: req.file,
+        mimeType: getConsultationImageMimeType(req.file.buffer),
+    });
+    return res.status(201).json({ message: { ...message, canEdit: true } });
+});
+
+app.get("/api/admin/consultation-chats/:chatId/attachments/:attachmentId", requireAdmin, requireConsultationAdmin, (req, res) => {
+    const chat = database.prepare("SELECT id FROM consultation_chats WHERE public_id = ?").get(req.params.chatId);
+    if (!chat) return res.status(404).json({ error: "محادثة الاستشارة غير موجودة." });
+    return sendConsultationImage(res, chat.id, Number(req.params.attachmentId));
 });
 
 app.patch("/api/admin/consultation-chats/:chatId/messages/:messageId", requireAdmin, requireConsultationAdmin, (req, res) => {
@@ -809,10 +984,9 @@ app.post("/api/consultation-chats", async (req, res) => {
     insertIntro.run(result.lastInsertRowid, introMessages[0] || `أهلًا ${visitorName}، أنا المساعد الذكي للمكتب. هساعدك توصل طلبك للإدارة وتحجز وقت مناسب للمحادثة.`);
     insertIntro.run(result.lastInsertRowid, introMessages[1] || "اكتب ملخصًا للمساعدة المطلوبة، وبريدك وموعدك المفضل وصلوا للإدارة. هتظهر المحادثة بعد تأكيد الموعد ولمدة 20 دقيقة.");
 
-    const mainAdmins = adminAccounts.filter((account) => account.role === "main_admin");
     let notifiedAdmins = 0;
     const frontendUrl = req.get("origin") || process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN || "http://localhost:5173";
-    for (const account of mainAdmins) {
+    for (const account of adminAccounts) {
         try {
             if (await sendEmail(
                 account.email,
@@ -820,7 +994,7 @@ app.post("/api/consultation-chats", async (req, res) => {
                 `طلب محادثة جديد من ${visitorName}\nالبريد: ${visitorEmail}\nالموعد المفضل: ${new Date(preferredTimestamp).toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })}\n\nالتفاصيل:\n${requestDetails}\n\nرقم المحادثة: ${publicId}\nلوحة المحادثات: ${frontendUrl}/control-center/secure-lawyer-conversations-admin-7f3a9c2e8b1d4a6f/admin-consultation`,
             )) notifiedAdmins += 1;
         } catch (error) {
-            console.error(`Could not notify a Main Admin about chat ${publicId}: ${error.message}`);
+            console.error(`Could not notify an admin about chat ${publicId}: ${error.message}`);
         }
     }
     return res.status(201).json({ chatId: publicId, visitorToken, notifiedAdmins });
@@ -849,10 +1023,20 @@ app.get("/api/consultation-chats/:chatId/messages", (req, res) => {
     const chat = database.prepare("SELECT * FROM consultation_chats WHERE public_id = ? AND visitor_token_hash = ?")
         .get(req.params.chatId, hashValue(visitorToken));
     if (!chat) return res.status(404).json({ error: "محادثة الاستشارة غير موجودة." });
-    const messages = database.prepare("SELECT id, sender_role, sender_name, sender_id, content, created_at, edited_at FROM consultation_chat_messages WHERE chat_id = ? ORDER BY id ASC")
+    const messages = database.prepare(`
+        SELECT message.id, message.sender_role, message.sender_name, message.sender_id, message.content,
+            message.created_at, message.edited_at, attachment.id AS attachment_id,
+            attachment.mime_type AS attachment_mime_type, attachment.original_name AS attachment_name
+        FROM consultation_chat_messages AS message
+        LEFT JOIN consultation_chat_attachments AS attachment ON attachment.message_id = message.id
+        WHERE message.chat_id = ? ORDER BY message.id ASC
+    `)
         .all(chat.id)
-        .map(({ sender_id: senderId, ...message }) => ({
+        .map(({ sender_id: senderId, attachment_id: attachmentId, attachment_mime_type: attachmentMimeType, attachment_name: attachmentName, ...message }) => ({
             ...message,
+            attachmentId,
+            attachmentMimeType,
+            attachmentName,
             canEdit: message.sender_role === "visitor" && senderId === "visitor",
         }));
     const availability = getConsultationChatState(chat);
@@ -885,6 +1069,36 @@ app.post("/api/consultation-chats/:chatId/messages", (req, res) => {
     const message = database.prepare("SELECT id, sender_role, sender_name, content, created_at, edited_at FROM consultation_chat_messages WHERE id = ?")
         .get(inserted.lastInsertRowid);
     return res.status(201).json({ message: { ...message, canEdit: true } });
+});
+
+app.post("/api/consultation-chats/:chatId/attachments", handleConsultationImageUpload, (req, res) => {
+    const visitorToken = req.get("x-consultation-token") || "";
+    const chat = database.prepare("SELECT * FROM consultation_chats WHERE public_id = ? AND visitor_token_hash = ?")
+        .get(req.params.chatId, hashValue(visitorToken));
+    if (!chat) return res.status(404).json({ error: "محادثة الاستشارة غير موجودة." });
+    if (getConsultationChatState(chat) !== "open") return res.status(409).json({ error: "إرفاق الصور متاح خلال الموعد المحدد فقط." });
+    const imageError = validateConsultationImage(req.file);
+    if (imageError) return res.status(400).json({ error: imageError });
+    const caption = typeof req.body?.caption === "string" ? req.body.caption.trim() : "";
+    if (caption.length > 4000) return res.status(400).json({ error: "لا يتجاوز وصف الصورة 4000 حرف." });
+    const message = saveConsultationAttachmentMessage({
+        chatId: chat.id,
+        senderRole: "visitor",
+        senderName: chat.visitor_name,
+        senderId: "visitor",
+        caption,
+        file: req.file,
+        mimeType: getConsultationImageMimeType(req.file.buffer),
+    });
+    return res.status(201).json({ message });
+});
+
+app.get("/api/consultation-chats/:chatId/attachments/:attachmentId", (req, res) => {
+    const visitorToken = req.get("x-consultation-token") || "";
+    const chat = database.prepare("SELECT id FROM consultation_chats WHERE public_id = ? AND visitor_token_hash = ?")
+        .get(req.params.chatId, hashValue(visitorToken));
+    if (!chat) return res.status(404).json({ error: "محادثة الاستشارة غير موجودة." });
+    return sendConsultationImage(res, chat.id, Number(req.params.attachmentId));
 });
 
 app.patch("/api/consultation-chats/:chatId/messages/:messageId", (req, res) => {
@@ -946,24 +1160,25 @@ async function sendWeeklyAdminCodes() {
 
     const now = Date.now();
     for (const account of adminAccounts) {
-        const currentCode = database.prepare("SELECT code_length, expires_at FROM admin_access_codes WHERE email = ?").get(account.email);
-        if (currentCode?.expires_at > now && currentCode.code_length === Length) continue;
+        const currentCode = database.prepare("SELECT code_length, code_format, expires_at FROM admin_access_codes WHERE email = ?").get(account.email);
+        if (currentCode?.expires_at > now && currentCode.code_length === Length && currentCode.code_format === ADMIN_CODE_FORMAT_VERSION) continue;
 
         const code = createAdminAccessCode();
         const expiresAt = now + ACCESS_CODE_TTL;
         try {
-            await mailTransport.sendMail({
+            const delivery = await mailTransport.sendMail({
                 from: process.env.SMTP_FROM || process.env.SMTP_USER,
                 to: account.email,
                 subject: "كود دخول لوحة إدارة المنصة",
                 text: `مرحبًا ${account.name || ""}\n\nكود دخول لوحة الإدارة: ${code}\n\nالكود صالح لمدة 7 أيام وينتهي في ${new Date(expiresAt).toLocaleString("ar-EG")}. لا تشاركه مع أي شخص.`,
             });
+            assertEmailRecipientAccepted(delivery, account.email);
             database.prepare(`
-                INSERT INTO admin_access_codes (email, code_hash, code_length, expires_at) VALUES (?, ?, ?, ?)
+                INSERT INTO admin_access_codes (email, code_hash, code_length, code_format, expires_at) VALUES (?, ?, ?, ?, ?)
                 ON CONFLICT(email) DO UPDATE SET code_hash = excluded.code_hash,
-                    code_length = excluded.code_length, expires_at = excluded.expires_at
-            `).run(account.email, hashValue(code), Length, expiresAt);
-            console.log(`Admin access code sent to ${account.email}.`);
+                    code_length = excluded.code_length, code_format = excluded.code_format, expires_at = excluded.expires_at
+            `).run(account.email, hashValue(code), Length, ADMIN_CODE_FORMAT_VERSION, expiresAt);
+            console.log(`SMTP accepted an admin access-code email for ${account.email}; inbox delivery is not confirmed.`);
         } catch (error) {
             console.error(`Could not send an admin access code to ${account.email}: ${error.message}`);
         }

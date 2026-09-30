@@ -75,12 +75,26 @@ html{
   position: absolute;
   top: 0%;
   left: 0%;
-  display: flex;
+  display: grid;
+  grid-template-columns: 400px 1fr;
   border-bottom: 2px solid var(--Color);
-  align-items: center;
-  justify-content: space-between;
   font-size: 12.5px;
   z-index: 1000;
+  align-items: center;
+  background-color: var(--Background-Color);
+  .ListSlider{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+@media( max-width:1050px ){
+  .Header{
+    grid-template-columns: 300px 1fr;
+    .ListSlider{
+      gap: 1em;
+    }
+  }
 }
 .Buttons{
   display: flex;
@@ -153,6 +167,9 @@ html{
         border-radius: 5px;
         padding: 5px 30px;
         border: none;
+        width: auto;
+        min-width: 75px;
+        max-width: 100px;
       }
     }
   }
@@ -1085,6 +1102,48 @@ html{
   padding: .8rem;
   border-top: 1px solid var(--Grey);
 }
+.ConsultationImageInput{
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.ConsultationAttachButton{
+  flex: 0 0 auto;
+  padding: .55rem .75rem;
+  border: 1px solid var(--Grey);
+  border-radius: 4px;
+  background: var(--Background-Color);
+  color: var(--Color);
+  font: inherit;
+  cursor: pointer;
+}
+.ConsultationAttachButton:disabled{
+  opacity: .6;
+  cursor: wait;
+}
+.ConsultationAttachmentImage{
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: .5rem;
+}
+.ConsultationAttachmentImage img{
+  display: block;
+  width: min(100%, 440px);
+  max-height: 360px;
+  border: 1px solid var(--Grey);
+  border-radius: 4px;
+  object-fit: contain;
+}
+.ConsultationAttachmentLoading,
+.ConsultationAttachmentUnavailable{
+  display: block;
+  margin-top: .5rem;
+  color: var(--Color-Light);
+  font-size: .8rem;
+}
 .AdminConsultationComposer textarea,
 .ConsultationChatComposer textarea,
 .ConsultationChatStart input{
@@ -1775,5 +1834,572 @@ html{
         color: var(--Second_Color);
       }
     }
+  }
+}
+.Continer{
+  position: relative;
+  --MediaWidth: 175px;
+  width: calc(var(--MediaWidth) * 3);
+  height: var(--MediaWidth);
+  margin: 1% auto;
+  display: flex;
+  align-items: center;
+  &:hover {
+    scale: 1.01;
+    & .Character{
+      right: -30%;
+    }
+  }
+  & .Character{
+    height: 100%;
+    position: absolute;
+    top: 50%;
+    right: -17.5%;
+    translate: -50% -50%;
+    object-fit: cover;
+    object-position: left;
+    width: 130px;
+    border-radius: 5px 0px 2rem 0px;
+    border: 1px solid grey;
+    transition: all .5s ease;
+  }
+  .SocialMedia.Account{
+    width: calc(var(--MediaWidth) * 3);
+    height: 100%;
+    border-radius: 2rem 0px;
+    border: 1px solid grey;
+    position: relative;
+    z-index: 99;
+    background-color: var(--Background-Color);
+    box-shadow: 1px 0px 5px 1px var(--Background-Color);
+    &::after , &::before{
+      width: calc(var(--MediaWidth) / 2);
+      height: calc(var(--MediaWidth) / 3.5);
+      border-radius: 1.8rem 0rem 0rem 0rem;
+      border-top: 1px solid grey;
+      border-left: 1px solid grey;
+      position: absolute;
+      content: "";
+      top: 4px;
+      left: 4px;
+    }
+    &::after{
+      left: calc((var(--MediaWidth) * 3.035) - ((var(--MediaWidth) / 1.875) + 5px));
+      top: calc((var(--MediaWidth) / 1.4) - 5px);
+      border: none;
+      border-radius: 0rem 0rem 1.8rem 0rem;
+      border-bottom: 1px solid grey;
+      border-right: 1px solid grey;
+    }
+    & .Jop{
+      font-size: 12px;
+      margin: -4.5% 0%;
+      margin-bottom: 0%;
+    }
+    & .Socials{
+      margin: 2% auto;
+      width: 80%;
+      height: 65px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5em;
+      border-radius:4rem;
+      border: 1px solid grey;
+      & .Icon{
+        width: 50px;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid grey;
+        border-radius: 50%;
+        &:hover{
+          & .IconS{
+            scale: 1.05;
+          }
+        }
+        & .IconS{
+          width: 75%;
+          height: 75%;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+      }
+    }
+  }
+}
+
+/* Public pages responsive layout */
+.HeaderMenuToggle,
+.HeaderMenuButton,
+.HeaderMenuClose{
+  display: none;
+}
+
+@media (max-width: 900px){
+  .Header{
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px 4%;
+    grid-template-columns: 1fr auto;
+    min-height: 60px;
+  }
+  .HeaderMenuToggle{
+    display: block;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .HeaderMenuButton{
+    width: 42px;
+    height: 42px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 1px solid var(--Color);
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .HeaderMenuButton span{
+    width: 20px;
+    height: 2px;
+    background-color: var(--Color);
+  }
+  .HeaderMenuToggle:focus-visible + .HeaderMenuButton{
+    outline: 2px solid var(--Color-Light);
+    outline-offset: 3px;
+  }
+  .Header .ListSlider{
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    z-index: -1;
+    box-sizing: border-box;
+    width: 100%;
+    max-height: calc(100vh - 60px);
+    padding: 1rem 4%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    overflow-y: auto;
+    border-bottom: 2px solid var(--Color);
+    background-color: var(--Background-Color);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-110%);
+    transition: transform .35s ease, opacity .25s ease, visibility .35s ease;
+  }
+  .HeaderMenuToggle:checked ~ .ListSlider{
+    z-index: 1000;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .HeaderMenuClose{
+    display: block;
+    align-self: flex-end;
+    padding: .45rem .8rem;
+    border: 1px solid var(--Color);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .Header .ListSlider .Buttons{
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: .5rem;
+  }
+  .Header .ListSlider .Button{
+    box-sizing: border-box;
+    width: 100%;
+    padding: .65rem .8rem;
+    border: 1px solid var(--Grey);
+    border-radius: 4px;
+    text-align: right;
+  }
+  .Header .Background-Change-Toggle{
+    align-self: flex-end;
+  }
+  .First-Section:not(.AdminDashboard){
+    box-sizing: border-box;
+    min-height: 560px;
+    height: 78vh;
+    margin-top: 60px;
+  }
+  .First-Section .Center-Section{
+    width: 90%;
+    left: 5%;
+    bottom: 12%;
+    font-size: 24px;
+    line-height: 1.35;
+  }
+  .First-Section .Center-Section .Buttons{
+    width: min(100%, 360px);
+    gap: .75rem;
+    flex-wrap: wrap;
+  }
+  .Service-Card{
+    box-sizing: border-box;
+    width: min(400px, 92vw);
+    height: auto;
+    min-height: 460px;
+    grid-template-rows: 200px auto 1fr 50px;
+  }
+  .Service-Card .Image-Of-The-Service{
+    height: 200px;
+  }
+  .Service-Card .CenterIcon{
+    top: 180px;
+  }
+  .Service-Card-Two{
+    box-sizing: border-box;
+    width: 92%;
+    height: auto;
+    min-height: 0;
+    flex-direction: column;
+    gap: 0;
+  }
+  .Service-Card-Two .Background{
+    width: 100%;
+    height: 220px;
+    border-radius: 4px 4px 0 0;
+  }
+  .Service-Card-Two .Desc{
+    box-sizing: border-box;
+    width: 100%;
+    padding: 1.5rem;
+  }
+  .Service-Card-Two .Desc .Icon{
+    top: 0;
+    right: 50%;
+    translate: 50% -50%;
+  }
+  .Service-Card-Two .Desc .Description{
+    width: 100%;
+  }
+  .Lawyer-Card{
+    box-sizing: border-box;
+    width: 90%;
+    margin: 1.5rem auto;
+    gap: 1rem;
+  }
+  .Lawyer-Card .About{
+    grid-template-columns: 1fr;
+    gap: .5rem;
+  }
+  .Sections.First-Section.Consultation{
+    min-height: 760px;
+    height: auto;
+  }
+  .Sections.First-Section.Consultation .Background{
+    top: 24%;
+    right: 50%;
+    translate: 50% -50%;
+    width: min(70vw, 300px);
+    height: min(70vw, 300px);
+  }
+  .Sections.First-Section.Consultation .Background img{
+    box-sizing: border-box;
+    width: 100%;
+    max-height: 100%;
+    margin: 0;
+    object-fit: contain;
+  }
+  .Sections.First-Section.Consultation .Center-Section{
+    top: 68%;
+    left: 50%;
+    width: 90%;
+    translate: -50% -50%;
+  }
+  body:has(.Header) .Input-Box,
+  body:has(.Header) .TheMassage{
+    box-sizing: border-box;
+    width: min(100% - 2rem, 500px);
+  }
+  .Continer{
+    --MediaWidth: clamp(100px, 24vw, 160px);
+    max-width: 94vw;
+  }
+  .Continer .Character{
+    width: clamp(75px, 18vw, 115px);
+  }
+  .Continer .SocialMedia.Account .Socials{
+    height: 52px;
+  }
+  .Continer .SocialMedia.Account .Socials .Icon{
+    width: 38px;
+    height: 38px;
+  }
+  .Footer{
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px 3%;
+    gap: .75rem 1.5rem;
+    flex-wrap: wrap;
+  }
+  .Footer .Icon{
+    font-size: 9px;
+  }
+  .Footer .Icon img{
+    width: 18px;
+    height: 18px;
+  }
+  .ConsultationChat{
+    width: calc(100% - 1rem);
+    margin: 1rem auto 2rem;
+  }
+}
+
+@media (max-width: 700px){
+  .Sections:not(.AdminDashboard){
+    width: 100%;
+    margin-right: 0;
+  }
+  .First-Section:not(.AdminDashboard){
+    min-height: 520px;
+    height: 72vh;
+  }
+  .First-Section .Center-Section{
+    font-size: 20px;
+  }
+  .First-Section .Center-Section .Description{
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  .First-Section .Center-Section .Buttons .Button.Outline{
+    max-width: none;
+    padding: 7px 12px;
+  }
+  .Services{
+    box-sizing: border-box;
+    width: 100%;
+    padding: 1rem 4%;
+    gap: 1.25rem;
+  }
+  .Service-Card-Two{
+    width: 92%;
+  }
+  .Service-Card-Two .Background{
+    height: 190px;
+  }
+  .Lawyer-Card{
+    flex-direction: column;
+    text-align: center;
+  }
+  .Lawyer-Card .About{
+    text-align: center;
+  }
+  .Lawyer-Card .Social{
+    justify-content: center;
+  }
+  .Sections.First-Section.Consultation{
+    min-height: 730px;
+  }
+  .Sections.First-Section.Consultation .Center-Section{
+    top: 67%;
+  }
+  .Consultation_Card{
+    --C_Width: 120px;
+  }
+  .Consultation_Details{
+    box-sizing: border-box;
+    padding: .5rem .75rem 1rem;
+  }
+  .Consultation_Details .Message{
+    box-sizing: border-box;
+    max-width: calc(100% - 10px);
+  }
+  .AutoMaticMessage{
+    max-width: 92%;
+  }
+  .Continer{
+    --MediaWidth: clamp(90px, 27vw, 125px);
+    width: calc(var(--MediaWidth) * 3);
+  }
+  .Continer .Character{
+    display: none;
+  }
+  .Continer .SocialMedia.Account .Jop{
+    margin: 0;
+  }
+  .Continer .SocialMedia.Account .Socials{
+    width: 90%;
+    gap: .35rem;
+  }
+  .Footer{
+    gap: .5rem 1rem;
+  }
+  .Footer .Icon{
+    gap: 3px;
+  }
+  .Third-Section{
+    margin-bottom: 15%;
+    padding: 0 1rem;
+    box-sizing: border-box;
+  }
+  .Third-Section .Description{
+    overflow-wrap: anywhere;
+  }
+  .Third-Section .Input-Box{
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px){
+  .Header{
+    font-size: 11px;
+  }
+  .First-Section{
+    min-height: 500px;
+    height: 70vh;
+  }
+  .First-Section .Center-Section{
+    bottom: 8%;
+    font-size: 18px;
+  }
+  .First-Section .Center-Section .Buttons{
+    width: 100%;
+  }
+  .First-Section .Center-Section .Buttons .Button.Outline{
+    padding: 6px 9px;
+    font-size: 9px;
+  }
+  .Service-Card{
+    min-height: 430px;
+    grid-template-rows: 175px auto 1fr 48px;
+  }
+  .Service-Card .Image-Of-The-Service{
+    height: 175px;
+  }
+  .Service-Card .CenterIcon{
+    top: 158px;
+  }
+  .Service-Card-Two .Background{
+    height: 165px;
+  }
+  .Sections.First-Section.Consultation{
+    min-height: 700px;
+  }
+  .Sections.First-Section.Consultation .Background{
+    top: 22%;
+    width: min(65vw, 250px);
+    height: min(65vw, 250px);
+  }
+  .Sections.First-Section.Consultation .Center-Section{
+    top: 65%;
+  }
+  .Footer .Icon img{
+    width: 16px;
+    height: 16px;
+  }
+  .ConsultationChatHeader{
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .ConsultationChatMessages{
+    min-height: 220px;
+    max-height: 48vh;
+    padding: .75rem;
+  }
+  .ConsultationChatMessage{
+    max-width: 94%;
+  }
+}
+.Loading-Page{
+  margin-top: 5%;
+  padding-bottom: 10%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .Flex{
+    .Ciricle_Rotate{
+      width: 50px;
+      height: 50px;
+      position: relative;
+      border-radius: 50%;
+      margin-bottom: -37.5px;
+      &::after{
+        width: 10px;
+        height: 10px;
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        background-color: var(--BackgroundColorMain);
+        top: 0%;
+        left: 43%;
+        translate: 0% -50%;
+      }
+      animation: RotateAndFollowTheLeader 1.5s ease backwards infinite;
+      animation-delay: calc(var(--index) * .15s);
+    }
+  }
+}
+.AppLoading{
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background-color: var(--Background-Color);
+  animation: FadeInUp .3s ease both;
+}
+.AppLoading.exit{
+  animation: FadeOutDown .25s ease both;
+}
+.AppLoading .Loading-Page{
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+.AppLoading .Loading-Page .Flex{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.RouteTransition{
+  animation: FadeInUp .3s ease both;
+}
+.RouteTransition.exit{
+  animation: FadeOutDown .22s ease both;
+}
+@keyframes RotateAndFollowTheLeader {
+  0%{
+    rotate: 0deg;
+  }
+  60% , 100%{
+    rotate: 360deg;
+  }
+}
+@keyframes FadeInUp {
+  from{
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to{
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}
+@keyframes FadeOutDown {
+  from{
+    transform: translateY(0px);
+    opacity: 1;
+  }
+  to{
+    transform: translateY(12px);
+    opacity: 0;
   }
 }
