@@ -17,8 +17,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 fs.mkdirSync(path.join(currentDirectory, "data"), { recursive: true });
 const database = new Database(path.join(currentDirectory, "data", "chat.sqlite"));
-const servicesPath = path.join(currentDirectory, "..", "Lawyer_Frontend", "src", "Pages", "Services.json");
-const lawyersPath = path.join(currentDirectory, "..", "Lawyer_Frontend", "src", "Pages", "Lawyers.json");
+const servicesPath = path.join(currentDirectory, "Datas" , "Services.json");
+const lawyersPath = path.join(currentDirectory, "Datas" , "Lawyers.json");
 const services = JSON.parse(fs.readFileSync(servicesPath, "utf8"));
 const lawyers = JSON.parse(fs.readFileSync(lawyersPath, "utf8"));
 
