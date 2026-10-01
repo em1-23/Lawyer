@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import ConsultationAttachmentImage from "../ConsultationPages/ConsultationAttachmentImage"
 
-const API_URL = import.meta.env.VITE_API_URL
+const API_URL = import.meta.env.VITE_API_URL || "https://lawyer-production-be12.up.railway.app"
 
 function toLocalDateTime(date) {
   const offset = date.getTimezoneOffset() * 60_000
