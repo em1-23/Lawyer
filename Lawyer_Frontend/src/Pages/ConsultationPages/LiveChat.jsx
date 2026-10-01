@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import NearestLawyer from './NearestLawyer'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://lawyer-production-be12.up.railway.app'
+const API_URL = 'https://lawyer-production-be12.up.railway.app'
 
 function LiveChat() {
   const navigate = useNavigate()

@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import ConsultationAutomaticMessages from "./ConsultationAutomaticMessages"
 import ConsultationAttachmentImage from "./ConsultationAttachmentImage"
-
-const API_URL = import.meta.env.VITE_API_URL || "https://lawyer-production-be12.up.railway.app"
+const API_URL = 'https://lawyer-production-be12.up.railway.app'
 const CHAT_STORAGE_KEY = "lawyer-consultation-chat"
 
 function toLocalDateTime(date) {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const API_URL = import.meta.env.VITE_API_URL || "https://lawyer-production-be12.up.railway.app"
+const API_URL = 'https://lawyer-production-be12.up.railway.app'
 
 function ChatsDashboard() {
   const [conversations, setConversations] = useState([])
