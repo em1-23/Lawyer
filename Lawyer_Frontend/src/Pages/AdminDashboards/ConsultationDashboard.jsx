@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import ConsultationAttachmentImage from "../ConsultationPages/ConsultationAttachmentImage"
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
+const API_URL = import.meta.env.VITE_API_URL
 
 function toLocalDateTime(date) {
   const offset = date.getTimezoneOffset() * 60_000
