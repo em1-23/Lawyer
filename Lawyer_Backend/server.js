@@ -22,6 +22,7 @@ const lawyersPath = path.join(currentDirectory, "." , "Datas" , "Lawyers.json");
 const rulesandquestions = path.join(currentDirectory, "." , "Datas" , "RulesAndQuestions.json");
 const services = JSON.parse(fs.readFileSync(servicesPath, "utf8"));
 const lawyers = JSON.parse(fs.readFileSync(lawyersPath, "utf8"));
+const RulesandQuestions = JSON.parse(fs.readFileSync(rulesandquestionsPath, "utf8"));
 
 database.pragma("journal_mode = WAL");
 database.exec(`
