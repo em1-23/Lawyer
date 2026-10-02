@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Outlet } from "react-router-dom"
 
-const API_URL = 'https://lawyer-production-be12.up.railway.app'
+const API_URL = import.meta.env.VITE_API_URL
 
 function getDeviceLabel() {
   const agent = navigator.userAgent
@@ -87,10 +87,12 @@ function AdminDashboard() {
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || "تعذر تسجيل الدخول.")
-      setAdmin(data.admin)
-      setCode("")
       const sessionResponse = await fetch(`${API_URL}/api/admin/session`, { credentials: "include" })
-      if (sessionResponse.ok) setCodeExpiresAt((await sessionResponse.json()).codeExpiresAt)
+      const sessionData = sessionResponse.ok ? await sessionResponse.json() : null
+      if (!sessionData) throw new Error("تم قبول بيانات الدخول لكن تعذر حفظ الجلسة. تحقق من إعدادات الكوكيز.")
+      setAdmin(sessionData.admin)
+      setCodeExpiresAt(sessionData.codeExpiresAt)
+      setCode("")
     } catch (loginError) {
       setError(loginError.message)
     } finally {

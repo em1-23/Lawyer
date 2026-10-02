@@ -7,7 +7,7 @@ function Home() {
     <>
       <FirstSection />
       <OfficeServicesSection />
-      <MoreSection />
+      {/* <MoreSection /> */}
     </>
   )
 }

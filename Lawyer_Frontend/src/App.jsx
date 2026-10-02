@@ -16,6 +16,7 @@ import ConsultationDashboard from './Pages/AdminDashboards/ConsultationDashboard
 import Call_Us from './Pages/Call_Us'
 import Rules from './Pages/Rules'
 import LoadingPage from './Pages/LoadingPage'
+import Questions from './Pages/Questions'
 
 const ADMIN_DASHBOARD_PATH = '/control-center/secure-lawyer-conversations-admin-7f3a9c2e8b1d4a6f'
 
@@ -61,6 +62,7 @@ function AppRoutes() {
         <Route path="/eg-rules" element={<Rules />} />
         <Route path="/call-us" element={<Call_Us />} />
         <Route path="/loading" element={<LoadingPage />} />
+        <Route path='/questions' element={<Questions />} />
       </Routes>
       </div>
     </>

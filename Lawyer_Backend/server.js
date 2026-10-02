@@ -386,7 +386,7 @@ function getCookie(req, name) {
 }
 
 function setSessionCookie(res, token) {
-    const sameSite = process.env.ADMIN_COOKIE_SAME_SITE || "Lax";
+    const sameSite = process.env.ADMIN_COOKIE_SAME_SITE || (process.env.NODE_ENV === "production" ? "None" : "Lax");
     const secure = process.env.NODE_ENV === "production" || sameSite.toLowerCase() === "none";
     res.setHeader("Set-Cookie", `${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; Path=/api/admin; SameSite=${sameSite}; Max-Age=${SESSION_TTL / 1000}${secure ? "; Secure" : ""}`);
 }

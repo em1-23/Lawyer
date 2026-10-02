@@ -555,6 +555,38 @@ html{
     }
   }
 }
+@media (max-width:1050px) {
+  .Live-Chat{
+    right: -35%;
+  }
+}
+@media (max-width:880px) {
+  .Live-Chat{
+    right: -40%;
+  }
+}
+@media (max-width:780px) {
+  .Live-Chat{
+    right: -45%;
+  }
+}
+@media (max-width:600px) {
+  .Live-Chat{
+    right: -65%;
+  }
+}
+@media (max-width:500px) {
+  .Live-Chat{
+    bottom: 18%;
+    right: -85%;
+  }
+}
+@media (max-width:400px) {
+  .Live-Chat{
+    bottom: 18%;
+    right: -115%;
+  }
+}
 @keyframes ChatMessageAppear{
   from{
     opacity: 0;
@@ -1735,7 +1767,7 @@ html{
   display: grid;
   grid-template-rows: 1fr 1fr;
   grid-template-columns: 1fr;
-  gap: .5em;
+  gap: 2em;
   padding-bottom: 15px;
   & *{
     color: var(--Background-Color);
@@ -1847,14 +1879,14 @@ html{
   &:hover {
     scale: 1.01;
     & .Character{
-      right: -30%;
+      right: calc(var(--MediaWidth) * -0.9);
     }
   }
   & .Character{
     height: 100%;
     position: absolute;
     top: 50%;
-    right: -17.5%;
+    right: 0%;
     translate: -50% -50%;
     object-fit: cover;
     object-position: left;
@@ -1863,7 +1895,7 @@ html{
     border: 1px solid grey;
     transition: all .5s ease;
   }
-  .SocialMedia.Account{
+  & .SocialMedia.Account{
     width: calc(var(--MediaWidth) * 3);
     height: 100%;
     border-radius: 2rem 0px;
@@ -1899,7 +1931,7 @@ html{
     & .Socials{
       margin: 2% auto;
       width: 80%;
-      height: 65px;
+      height: calc(var(--MediaWidth) / 3.5);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1907,8 +1939,8 @@ html{
       border-radius:4rem;
       border: 1px solid grey;
       & .Icon{
-        width: 50px;
-        height: 50px;
+        width: calc(var(--MediaWidth) / 4.5);
+        height: calc(var(--MediaWidth) / 4.5);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -2125,20 +2157,6 @@ html{
     box-sizing: border-box;
     width: min(100% - 2rem, 500px);
   }
-  .Continer{
-    --MediaWidth: clamp(100px, 24vw, 160px);
-    max-width: 94vw;
-  }
-  .Continer .Character{
-    width: clamp(75px, 18vw, 115px);
-  }
-  .Continer .SocialMedia.Account .Socials{
-    height: 52px;
-  }
-  .Continer .SocialMedia.Account .Socials .Icon{
-    width: 38px;
-    height: 38px;
-  }
   .Footer{
     box-sizing: border-box;
     width: 100%;
@@ -2193,19 +2211,19 @@ html{
   }
   .Lawyer-Card{
     flex-direction: column;
-    text-align: center;
-  }
-  .Lawyer-Card .About{
-    text-align: center;
-  }
-  .Lawyer-Card .Social{
-    justify-content: center;
+    text-align: center; 
+    & .About{
+      text-align: center;
+    } 
+    & .Social{
+      justify-content: center;
+    }
   }
   .Sections.First-Section.Consultation{
     min-height: 730px;
-  }
-  .Sections.First-Section.Consultation .Center-Section{
-    top: 67%;
+    .Center-Section{
+      top: 67%;
+    }
   }
   .Consultation_Card{
     --C_Width: 120px;
@@ -2213,33 +2231,29 @@ html{
   .Consultation_Details{
     box-sizing: border-box;
     padding: .5rem .75rem 1rem;
-  }
-  .Consultation_Details .Message{
-    box-sizing: border-box;
-    max-width: calc(100% - 10px);
-  }
+    & .Message{
+      box-sizing: border-box;
+      max-width: calc(100% - 10px);
+    }
+  } 
   .AutoMaticMessage{
     max-width: 92%;
   }
   .Continer{
-    --MediaWidth: clamp(90px, 27vw, 125px);
-    width: calc(var(--MediaWidth) * 3);
-  }
-  .Continer .Character{
-    display: none;
-  }
-  .Continer .SocialMedia.Account .Jop{
-    margin: 0;
-  }
-  .Continer .SocialMedia.Account .Socials{
-    width: 90%;
-    gap: .35rem;
+    --MediaWidth : 125px;
+    margin: 20px auto;
+    & .SocialMedia.Account{
+      & .Jop{
+        margin: -7.5% 0%;
+        margin-bottom: -1%;
+      }
+    }
   }
   .Footer{
     gap: .5rem 1rem;
-  }
-  .Footer .Icon{
-    gap: 3px;
+    & .Icon{
+      gap: 3px;
+    }
   }
   .Third-Section{
     margin-bottom: 15%;
@@ -2258,30 +2272,41 @@ html{
   .Header{
     font-size: 11px;
   }
+  .Continer{
+    --MediaWidth : 100px;
+    margin: 20px auto;
+    height: calc(var(--MediaWidth) * 1.2);
+    & .SocialMedia.Account{
+      & .Jop{
+        margin: -7.5% 0%;
+        margin-bottom: -1%;
+      }
+    }
+  }
   .First-Section{
     min-height: 500px;
     height: 70vh;
-  }
-  .First-Section .Center-Section{
-    bottom: 8%;
-    font-size: 18px;
-  }
-  .First-Section .Center-Section .Buttons{
-    width: 100%;
-  }
-  .First-Section .Center-Section .Buttons .Button.Outline{
-    padding: 6px 9px;
-    font-size: 9px;
+    & .Center-Section{
+      bottom: 8%;
+      font-size: 18px;
+      & .Buttons{
+        width: 100%;
+        & .Button.Outline{
+          padding: 6px 9px;
+          font-size: 9px;
+        }
+      }
+    }
   }
   .Service-Card{
     min-height: 430px;
     grid-template-rows: 175px auto 1fr 48px;
-  }
-  .Service-Card .Image-Of-The-Service{
-    height: 175px;
-  }
-  .Service-Card .CenterIcon{
-    top: 158px;
+    & .Image-Of-The-Service{
+      height: 175px;
+    }
+    & .CenterIcon{
+      top: 158px;
+    }
   }
   .Service-Card-Two .Background{
     height: 165px;
@@ -2400,6 +2425,79 @@ html{
   }
   to{
     transform: translateY(12px);
+    opacity: 0; 
+  }
+}
+.Questions_Card{
+  width: 85%;
+  display: inline-block;
+  padding: 5px 5px;
+  text-align: right;
+  margin: .5% auto;
+  & .TheHead{
+    border-radius: 0px;
+    border-right: 3px solid var(--Color);
+    padding: 2px 5px;
+    margin: 0px -5px;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    gap: 1em;
+    background-color: var(--Background-Color);
+    & *{
+      color: var(--Color);
+    }
+    z-index: 999;
+    position: relative;
+    & .HeadName{
+      display: none;
+    }
+    & .QIcon{
+      display: inline-block;
+      rotate: 180deg;
+    }
+    &:has(.HeadName:checked){
+      & .QIcon{
+        rotate: 90deg;
+      }
+    }
+  }
+  & .TheBody{
+    border-bottom: 2px solid #1778da;
+    padding: 2px 5px;
+    z-index: 0;
+    border-radius: 0px;
+    background-color: #1779da26;
+    margin: -2.9% -5px;
+    position: relative;
+    top: 0%;
     opacity: 0;
   }
+  & .TheHead:has(.HeadName:checked) ~ .TheBody{
+    margin: 0% -5px;
+    opacity: 1;
+  }
+}
+.Article_Card{
+  max-width: 80%;
+  width: auto;
+  min-width: 70%;
+  display: inline-flex;
+  gap: 1em;
+  justify-content: right;
+  align-items: center;
+  margin: 5px auto;
+  padding: 5px;
+  border: 1px solid var(--Color-Light);
+  & .Key{
+    background-color: var(--Color-Light);
+    margin: -5px;
+    margin-left: 5px;
+    padding:5px;
+    color: var(--Background-Color);
+  }
+  animation: FadeInUp .3s linear both;
+  animation-delay: calc(var(--Mi) * .2s);
+  animation-timeline: view();
+  animation-range: entry 0% cover 10%; 
 }

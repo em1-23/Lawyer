@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 function Call_Us() {
   function Icon(N){
     let IconLink = `/Icons/${N.Name}.svg`
@@ -26,7 +28,11 @@ function Call_Us() {
   function AccountOne(){
     return(
       <div className="Continer">
-        <img src="/PhotoMe.jpg" alt="Mahmoud Ahmed" className="Character" />
+        <div className="Character">
+          <Link to="/control-center/secure-lawyer-conversations-admin-7f3a9c2e8b1d4a6f">
+            <img src="/PhotoMe.jpg" alt="Mahmoud Ahmed" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"left",borderRadius:"0 0 2rem 0"}}/>
+          </Link>
+        </div>
         <div className="SocialMedia Account MahmoudElnagar">
           <h3>محمود أحمد النجار</h3>
           <h5 className="Jop">مبرمج مواقع ويب</h5>
@@ -45,7 +51,11 @@ function Call_Us() {
   function AccountTwo(){
     return(
       <div className="Continer">
-        <img src="/Lawyers_Images/Mohammed_Saad.jpg" alt="Mohammed Saad" className="Character" />
+        <div className="Character">
+          <Link to="/control-center/secure-lawyer-conversations-admin-7f3a9c2e8b1d4a6f">
+            <img src="/Lawyers_Images/Mohammed_Saad.jpg" alt="Mahmoud Ahmed" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"left",borderRadius:"0 0 2rem 0"}}/>
+          </Link>
+        </div>
         <div className="SocialMedia Account MohammedSaad">
           <h3>محمد سعد أبوالفرج</h3>
           <h5 className="Jop">محامي شركات</h5>
@@ -65,6 +75,7 @@ function Call_Us() {
       <h2>جميع وسائل التواصل مع الموقع</h2>
       <AccountTwo />
       <AccountOne />
+      <Link to="/control-center/secure-lawyer-conversations-admin-7f3a9c2e8b1d4a6f" className='Input-Box Submit' style={{width:"auto",border:"1px solid var(--Color)"}}>الادارة - <span style={{fontSize:"10px",color:"#1198ff"}}>لو مش أدمن متطغتش</span></Link>
     </div>
   )
 }
