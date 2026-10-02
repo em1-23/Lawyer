@@ -19,7 +19,7 @@ fs.mkdirSync(path.join(currentDirectory, "data"), { recursive: true });
 const database = new Database(path.join(currentDirectory, "data", "chat.sqlite"));
 const servicesPath = path.join(currentDirectory, "." , "Datas" , "Services.json");
 const lawyersPath = path.join(currentDirectory, "." , "Datas" , "Lawyers.json");
-const lawyersPath = path.join(currentDirectory, "." , "Datas" , "RulesAndQuestions.json");
+const rulesandquestions = path.join(currentDirectory, "." , "Datas" , "RulesAndQuestions.json");
 const services = JSON.parse(fs.readFileSync(servicesPath, "utf8"));
 const lawyers = JSON.parse(fs.readFileSync(lawyersPath, "utf8"));
 
