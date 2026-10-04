@@ -34,7 +34,7 @@ function Call_Us() {
           </Link>
         </div>
         <div className="SocialMedia Account MahmoudElnagar">
-          <h3>محمود أحمد النجار</h3>
+          <h5 className='Special-Name English'>Mahmoud Ahmed Elnagar</h5>
           <h5 className="Jop">مبرمج مواقع ويب</h5>
           <div className="Socials">
             <Icon Name="Whatsapp" Number="+201027680112" />
@@ -57,7 +57,7 @@ function Call_Us() {
           </Link>
         </div>
         <div className="SocialMedia Account MohammedSaad">
-          <h3>محمد سعد أبوالفرج</h3>
+          <h5 className='Special-Name English'>Mohammed Saad AboFarg</h5>
           <h5 className="Jop">محامي شركات</h5>
           <div className="Socials">
             <Icon Name="Whatsapp" Number="+201069399134" />

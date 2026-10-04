@@ -5,6 +5,8 @@ function FirstSection() {
   let RealTime = new Date()
   let FTime = RealTime.getFullYear()
   let Exp = FTime - NumberOfTheAge[0].experience
+  localStorage.Experience = Exp
+  localStorage.StartYear = NumberOfTheAge[0].experience
   return (
     <div className="Sections First-Section">
       <img src="/First_Photo.jpg" alt="First Photo" className="Background" />

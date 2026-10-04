@@ -1,13 +1,15 @@
 import FirstSection from "./HomePages/FirstSection"
-import MoreSection from "./HomePages/MoreSection"
+import Map from "./HomePages/Map"
 import OfficeServicesSection from "./HomePages/OfficeServicesSection"
+import ProfileCard from "./HomePages/ProfileCard"
 
 function Home() {
   return (
     <>
       <FirstSection />
       <OfficeServicesSection />
-      {/* <MoreSection /> */}
+      <ProfileCard />
+      <Map />
     </>
   )
 }

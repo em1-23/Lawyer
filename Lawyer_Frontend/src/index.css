@@ -2,6 +2,14 @@
   font-family: "Cairo";
   src: url(Fonts/Cairo-Regular-3.ttf);
 }
+@font-face {
+  font-family: "Form";
+  src: url(Fonts/Birthday\ Wishes.ttf);
+}
+@font-face {
+  font-family: "Rovelink";
+  src: url(Fonts/Rovelink.otf);
+}
 :root{
   --Background-Color:#f0eee4;
   --Grey:#dfdfdd;
@@ -247,13 +255,12 @@ html{
 }
 .Service-Card{
   width: 400px;
-  height: 500px;
+  height: 300px;
   position: relative;
   border-radius: 5px;
   border: 1px solid var(--Grey);
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 220px 100px 1fr 50px;
   .CenterIcon{
     height: 50px;
     width: 50px;
@@ -272,32 +279,35 @@ html{
     }
   }
   & .Image-Of-The-Service{
-    border-radius:5px 5px 0px 0px ;
     width: 100%;
-    height: 200px;
+    height: 100%;
     object-fit: cover;
-    object-position: top;
-    &:hover{
-      filter: blur(2px);
-    }
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    translate: -50% -50%;
+    object-position: left;
+    opacity: 0;
+    border-radius: 5px;
+    filter: blur(5px);
+    visibility: hidden;
   }
   &:hover{
     scale: 1.01;
     & .Image-Of-The-Service{
-      scale:1.02
+      scale:1.02;
+      top: 50%;
+      visibility: visible;
+      opacity: 1;
+      filter: blur(0px);
     }
   }
-  & .Description{
-    font-size: 12.5px;
-    width: 90%;
-    text-align: center;
-    margin: 0 auto;
-  }
-  & .Choose{
-    color: var(--Color);
-    &:hover{
-      color: var(--Color-Light);
-    }
+  .Center-Section{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 .Third-Section{
@@ -1659,6 +1669,85 @@ html{
   gap: 1em;
   flex-wrap: wrap;
   justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+}
+
+.Sections.First-Section.ProfileCard{
+  display: grid;
+  width: 90%;
+  margin: 0 auto;
+  align-content: space-between;
+  justify-items: center;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr 350px;
+  grid-template-areas: "Section Img";
+  gap: 15em;
+  & .Background-F{
+    position: relative;
+    grid-area: Img;
+    width: 100%;
+    height: 100%;
+    & img{
+      width: 350px;
+      position: relative;
+      z-index: 10;
+      object-fit: cover;
+      height: 500px;
+      border-radius: 5px;
+      position: absolute;
+      translate: -50% -50%;
+      top: 45%;
+      left: 50%;  
+    }
+    & img.Shadow{
+      position: absolute;
+      translate: -50% -50%;
+      top: 45%;
+      left: 50%;
+      filter: blur(10px) contrast(3);
+      scale: 1.01;
+      z-index: 5;
+    }
+    & .S{
+      font-weight: bolder;
+      position: absolute;
+      z-index: 20;
+      width: 150%;
+      left: 130%;
+      top: 20%;
+      translate: -50% -50%;
+      text-align: left;
+      font-size: 20px;
+      color: #f0eee4;
+      text-shadow: 2px 2px 1px var(--Color);
+    }
+  }
+  & .Special-Section{
+    border-radius: 5px;
+    /* display: flex; */
+    /* flex-wrap: none; */
+    gap: 1em;
+    /* align-items: center; */
+    grid-area: Section;
+    padding: 0px 10px;
+  }
+}
+
+.Sections.First-Section.Map{
+  margin: 2% auto;
+  padding: 2% 0;
+  height: auto;
+  & .Maps{
+    width: 85%;
+    margin: 0% 7.5%;
+    height: 500px;
+    border-radius: 10px;
+  }
 }
 
 /* Consultation Section */
@@ -2500,4 +2589,11 @@ html{
   animation-delay: calc(var(--Mi) * .2s);
   animation-timeline: view();
   animation-range: entry 0% cover 10%; 
+}
+
+ & .Special-Name{
+  font-family: "Cairo";
+}
+& .Special-Name.English{
+  font-family: "Form";
 }
