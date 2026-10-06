@@ -6,7 +6,7 @@ function ProfileCard() {
     {id:4,Name:"تـــــــجاري"}
   ]
   return (
-    <div className="Sections First-Section ProfileCard">
+    <div className="Sections First-Section ProfileCard Transition">
       <div className="Background-F">
         <img src="/Mohammed_Saad.png" alt="Image" />
         <img src="/Mohammed_Saad.png" alt="Image" className="Shadow" />
@@ -26,9 +26,11 @@ function ProfileCard() {
               display:"inline-flex",
               alignItems:"center",
               width:"200px",
-              borderBottom:"1px solid var(--Color)",
               justifyContent:"space-between",gap:"2em",
-              margin:"1% 2%"
+              margin:"1% 2%",
+              padding:"0% 2%",
+              backgroundImage:" linear-gradient(to right ,transparent 0% 5%, var(--Color)  70% 100%)",
+              color:"var(--Background-Color)"
             }}>{N.Name}</li>
           ))}
         </div>

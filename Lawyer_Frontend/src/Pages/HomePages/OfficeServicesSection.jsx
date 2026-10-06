@@ -10,7 +10,7 @@ function OfficeServicesSection() {
   };
   const hasMore = number < Services.length;
   return (
-    <div className="Section Secound-Section">
+    <div className="Sections Secound-Section Transition">
       <h1>من الخدمات اللي بيقدمها المكتب</h1>
       <LineThrow />
       <div className="Services">

@@ -1,7 +1,7 @@
 function Map() {
   return (
     <div 
-      className="Sections First-Section Map" 
+      className="Sections First-Section Map Transition" 
       style={{
         textAlign:"center"
       }}

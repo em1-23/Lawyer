@@ -136,6 +136,11 @@ html{
   background-color: var(--Background-Color);
   margin-right: -.5%;
 }
+.Sections.Transition{
+  animation: FadeInUp 1s linear .1s both;
+  animation-timeline: view();
+  animation-range: 0% 40%;
+}
 .First-Section{
   margin-top: 6.15%;
   position: relative;
@@ -261,26 +266,9 @@ html{
   border: 1px solid var(--Grey);
   display: grid;
   grid-template-columns: 1fr;
-  .CenterIcon{
-    height: 50px;
-    width: 50px;
-    background-color: var(--Color);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 50%;
-    position: absolute;
-    border: 2px solid var(--Background-Color);
-    translate: -50% -50%;
-    left: 50%;
-    top: 40%;
-    & .CenterIcon-Svg{
-      fill: var(--Background-Color);
-    }
-  }
   & .Image-Of-The-Service{
-    width: 100%;
-    height: 100%;
+    width: 95%;
+    height: 95%;
     object-fit: cover;
     position: absolute;
     top: 70%;
@@ -289,7 +277,7 @@ html{
     object-position: left;
     opacity: 0;
     border-radius: 5px;
-    filter: blur(5px);
+    filter: blur(5px) brightness(.5);
     visibility: hidden;
   }
   &:hover{
@@ -299,7 +287,7 @@ html{
       top: 50%;
       visibility: visible;
       opacity: 1;
-      filter: blur(0px);
+      filter: blur(0px) brightness(.8);
     }
   }
   .Center-Section{
@@ -1723,16 +1711,13 @@ html{
       translate: -50% -50%;
       text-align: left;
       font-size: 20px;
-      color: #f0eee4;
-      text-shadow: 2px 2px 1px var(--Color);
+      color: var(--Color);
+      text-shadow: 2px 2px 5px var(--Background-Color);
     }
   }
   & .Special-Section{
     border-radius: 5px;
-    /* display: flex; */
-    /* flex-wrap: none; */
     gap: 1em;
-    /* align-items: center; */
     grid-area: Section;
     padding: 0px 10px;
   }
@@ -2591,9 +2576,143 @@ html{
   animation-range: entry 0% cover 10%; 
 }
 
- & .Special-Name{
+.Special-Name{
   font-family: "Cairo";
 }
-& .Special-Name.English{
+.Special-Name.English{
   font-family: "Form";
+}.Cards { 
+  display: grid; 
+  grid-template-rows: 1fr; 
+  grid-template-columns: 1fr 1fr 1fr 1fr; 
+  justify-items: center; 
+  align-content: center; 
+  gap: 1em; 
+  padding: 1%; 
+  margin: 0% auto; 
+  width: 95%; 
+  height: 150px; 
+  
+  /* تعديل أنيميشن الحاوية الكبيرة */
+  animation: FadeInUp 0.3s linear both; 
+  animation-timeline: view(); 
+  animation-range: entry 10% contain 20%; 
 }
+
+.Card {
+  --FirstColor: #1f1f1f;
+  --SecoundColor: #434343;
+  --SelColor: #ffffff;
+  --CardWidth: 135px;
+  width: calc(var(--CardWidth) * 2);
+  height: 96.5%;
+  background-image: linear-gradient(to bottom right, var(--SecoundColor), var(--FirstColor));
+  border-radius: 2.5px;
+  font-weight: bold;
+  display: grid;
+  text-align: center;
+  align-content: center;
+  gap: 1em;
+  position: relative;
+  font-size: 20px;
+  box-shadow: 5px 5px 15px var(--FirstColor);
+  & * {
+    color: var(--SelColor);
+  }
+  & span {
+    z-index: 5;
+  }
+
+  &.Special {
+    --SelColor: #000000;
+    --FirstColor: #d17611;
+    --SecoundColor: #faac1e;
+  }
+
+  & .Value {
+    direction: ltr;
+    font-family: 'Franklin Gothic Medium','Arial Narrow', Arial, sans-serif;
+  }
+}
+.Sections.First-Section.HomeFooter{
+  width: 100%;
+  height: 50%;
+  margin: 0% auto;
+  margin-bottom: 3.8%;
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr .5fr;
+  justify-items: center;
+  align-content: center;
+  padding: 2% 0%;
+  & .Sect{
+    width: 100%;
+    height: 100%;
+    position: relative;
+    &.Right-Section{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      & .img{
+        .Special-Name{
+          display: inline-block;
+          width: 275px;
+          font-family: "Rovelink";
+          margin: 0% 7.5%;
+          rotate: -15deg;
+        }
+        .Special-Name.English{
+          margin: 0% 5%;
+          font-family: "Form";
+          font-weight: bold;
+          width: 100%;
+          font-size: 22.5px;
+        }
+      }
+    }
+    &.Left-Section{
+      padding: 0;
+      margin: 0%;
+      border-radius: 25px;
+      display: flex;
+      gap: 1em;
+      & .FlexSliders{
+        border-right: 1px solid var(--Color);
+        width: 40%;
+        padding: 5% 1%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        & .Small{
+          font-size: 12px;
+          &.L{
+            border-right: 1px solid var(--Color);
+            padding: 0 7.5px;
+            margin: 0 -1%;
+            text-decoration: 1px underline transparent;
+            &:hover{
+              text-decoration: 1px underline black;
+            }
+          }
+          &.Link{
+            display: flex;
+            align-items: center;
+            justify-content: right;
+            width: 150%;
+            margin: 5px -5px;
+            & .Icon{
+              & .Svg{
+                width: 17.5px;
+                height: 17.5px;
+                fill:var(--Color);
+              }
+            }
+            & span{
+              width: 150%;
+            } 
+          }
+        }
+      }
+    }
+  }
+} 
