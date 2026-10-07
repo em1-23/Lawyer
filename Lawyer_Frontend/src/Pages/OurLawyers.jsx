@@ -4,7 +4,7 @@ import Lawyers from './Lawyers.json'
 
 function OurLawyers() {
   return (
-    <div className="Section Our-Lawyers">
+    <div className="Sections Our-Lawyers">
       <FirstSection />
       {Lawyers.map((N)=>(
         <LawyerCard 

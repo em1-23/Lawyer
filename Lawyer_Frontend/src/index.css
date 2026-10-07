@@ -2754,11 +2754,11 @@ html{
   }
   .Right-Section{
     & .img{
-      .Special-Name.English{
+      & .Special-Name.English{
         margin: 0% 5%;
         font-family: "Form";
-        width: 90%;
-        font-size: 10px;
+        width: 70%;
+        font-size: 5px;
       }
     }
   }
@@ -2772,5 +2772,11 @@ html{
     grid-template-rows: 1fr 1fr 1fr 1fr; 
     grid-template-columns:1fr;   
     height: 600px; 
+  }
+}
+.Sections.Our-Lawyers ,.Sections.First-Section.Secound{
+  & .Background{
+    object-position: bottom;
+    filter: brightness(.7);
   }
 }
