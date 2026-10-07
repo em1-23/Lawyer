@@ -1715,14 +1715,44 @@ html{
       text-shadow: 2px 2px 5px var(--Background-Color);
     }
   }
-  & .Special-Section{
-    border-radius: 5px;
-    gap: 1em;
+  & .Details{
     grid-area: Section;
-    padding: 0px 10px;
+    text-align: center;
+    & .Special-Section{
+      border-radius: 5px;
+      flex-wrap: wrap;
+      display: flex;
+      padding: 0px 10px;
+      & li{
+        width:300px;
+        background-image:linear-gradient(to right ,transparent 0% 10%, var(--Color)  70% 100%);
+      }
+    }
   }
 }
-
+@media (max-width:1000px) {
+  .Sections.First-Section.ProfileCard{
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr;
+    grid-template-areas: "Section" "Img";
+    height: auto;
+    gap: 6em;
+    padding-bottom: 6%;
+    & .Background-F{
+      .S{
+        left: 85%;
+        top: -13.5%;
+      }
+    }
+    & .Details{
+      & .Special-Section{
+        & li{
+          width: 700px;
+        }
+      }
+    }
+  }
+}
 .Sections.First-Section.Map{
   margin: 2% auto;
   padding: 2% 0;
@@ -2581,7 +2611,8 @@ html{
 }
 .Special-Name.English{
   font-family: "Form";
-}.Cards { 
+}
+.Cards { 
   display: grid; 
   grid-template-rows: 1fr; 
   grid-template-columns: 1fr 1fr 1fr 1fr; 
@@ -2592,19 +2623,18 @@ html{
   margin: 0% auto; 
   width: 95%; 
   height: 150px; 
-  
   /* تعديل أنيميشن الحاوية الكبيرة */
   animation: FadeInUp 0.3s linear both; 
   animation-timeline: view(); 
   animation-range: entry 10% contain 20%; 
+  position: relative;
 }
-
 .Card {
   --FirstColor: #1f1f1f;
   --SecoundColor: #434343;
   --SelColor: #ffffff;
   --CardWidth: 135px;
-  width: calc(var(--CardWidth) * 2);
+  width: 85%;
   height: 96.5%;
   background-image: linear-gradient(to bottom right, var(--SecoundColor), var(--FirstColor));
   border-radius: 2.5px;
@@ -2628,7 +2658,6 @@ html{
     --FirstColor: #d17611;
     --SecoundColor: #faac1e;
   }
-
   & .Value {
     direction: ltr;
     font-family: 'Franklin Gothic Medium','Arial Narrow', Arial, sans-serif;
@@ -2716,3 +2745,32 @@ html{
     }
   }
 } 
+
+@media (max-width: 950px) {
+  .Cards {
+    grid-template-rows: 1fr 1fr; 
+    height: 300px; 
+    grid-template-columns:1fr 1fr;   
+  }
+  .Right-Section{
+    & .img{
+      .Special-Name.English{
+        margin: 0% 5%;
+        font-family: "Form";
+        width: 90%;
+        font-size: 10px;
+      }
+    }
+  }
+  .Sections.First-Section.HomeFooter{
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
+@media (max-width: 500px) {
+  .Cards {
+    grid-template-rows: 1fr 1fr 1fr 1fr; 
+    grid-template-columns:1fr;   
+    height: 600px; 
+  }
+}
